@@ -57,15 +57,24 @@ const LoginSignUpForm = ({ type }) => {
     } else if (inputVal.password === '') {
       setIsValid({ ...isValid, isPasswordValid: false });
       return;
-    } else if (inputVal.passwordConfirm === '') {
-      setIsValid({ ...isValid, isPasswordConfirmValid: false });
-      return;
     }
+
     const hash = SHA256(inputVal.password).toString();
     navigate('/');
   };
 
   const signupHandler = () => {
+    if (inputVal.email === '') {
+      setIsValid({ ...isValid, isEmailValid: false });
+      return;
+    } else if (inputVal.password === '') {
+      setIsValid({ ...isValid, isPasswordValid: false });
+      return;
+    } else if (inputVal.passwordConfirm === '') {
+      setIsValid({ ...isValid, isPasswordConfirmValid: false });
+      return;
+    }
+
     const hash = SHA256(inputVal.password).toString();
     navigate('/login');
   };
