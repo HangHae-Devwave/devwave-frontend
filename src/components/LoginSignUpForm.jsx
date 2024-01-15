@@ -28,7 +28,8 @@ const LoginSignUpForm = ({ type }) => {
   };
 
   const nicknameChangeHandler = (e) => {
-    const regex = /^[가-힣]{2,4}|[a-zA-Z]{2,10}\s[a-zA-Z]{2,10}$/;
+    // 2자 이상 16자 이하, 영어 또는 숫자 또는 한글로 구성, 한글 초성 및 모음은 허가하지 않는다.
+    const regex = /^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,16}$/;
 
     setInputVal({ ...inputVal, nickname: e.target.value });
     setIsValid({ ...isValid, isNicknameValid: regex.test(e.target.value) ? true : false });
