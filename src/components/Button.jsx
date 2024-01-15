@@ -12,7 +12,7 @@ const Button = ({ size, children, ...props }) => {
 const StyledButton = styled.button`
   padding: ${(props) => getButtonPadding(props.size)};
   width: ${(props) => getButtonWidth(props.size)};
-  background-color: ${(props) => (props.primary ? props.theme.colors.primary : 'transparent')};
+  background-color: ${(props) => props.theme.colors.primary};
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -22,7 +22,7 @@ const StyledButton = styled.button`
   font-weight: bolder;
 
   &:hover {
-    background-color: ${(props) => (props.primary ? 'rgba(0, 125, 250, 0.8)' : 'transparent')};
+    background-color: rgba(0, 125, 250, 0.8);
   }
 `;
 

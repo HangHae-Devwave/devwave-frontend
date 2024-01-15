@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
 import { useNavigate, Link } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 import { SHA256 } from 'crypto-js';
+import * as UserService from '../server/userService';
+import styled from 'styled-components';
+import Button from './Button';
+import Input from './Input';
 import wallpaperImg from '../assets/wave-login.JPG';
 import emailIcon from '../assets/email-icon.svg';
 import profileIcon from '../assets/profile-icon.svg';
 import lockIcon from '../assets/lock-icon.svg';
 import checkIcon from '../assets/check-icon.svg';
-import Button from './Button';
-import Input from './Input';
 
 const LoginSignUpForm = ({ type }) => {
   const navigate = useNavigate();
+
   const [inputVal, setInputVal] = useState({ email: '', nickname: '', password: '', passwordConfirm: '' });
   const [isValid, setIsValid] = useState({
     isEmailValid: true,
@@ -48,7 +51,35 @@ const LoginSignUpForm = ({ type }) => {
     setIsValid({ ...isValid, isPasswordConfirmValid: inputVal.password === e.target.value ? true : false });
   };
 
-  const loginHandler = () => {
+  const loginHandler = async () => {
+    if (inputVal.email === '') {
+      setIsValid({ ...isValid, isEmailValid: false });
+      return;
+    } else if (inputVal.password === '') {
+      setIsValid({ ...isValid, isPasswordValid: false });
+      return;
+    }
+
+    if (isValid.isEmailValid && isValid.isPasswordValid) {
+      try {
+        const token = await UserService.authenticateUser(inputVal.email, SHA256(inputVal.password).toString());
+        const decoded = jwtDecode(token);
+        localStorage.setItem('token', token);
+        localStorage.setItem('email', decoded.email);
+        localStorage.setItem('nickname', decoded.nickname);
+        navigate('/');
+      } catch (error) {
+        alert(error.message);
+        if (error.name === 'UserNotFoundError') {
+          setIsValid({ ...isValid, isEmailValid: false });
+        } else if (error.name === 'IncorrectPasswordError') {
+          setIsValid({ ...isValid, isPasswordValid: false });
+        }
+      }
+    }
+  };
+
+  const signupHandler = async () => {
     if (inputVal.email === '') {
       setIsValid({ ...isValid, isEmailValid: false });
       return;
@@ -58,26 +89,27 @@ const LoginSignUpForm = ({ type }) => {
     } else if (inputVal.password === '') {
       setIsValid({ ...isValid, isPasswordValid: false });
       return;
-    }
-
-    const hash = SHA256(inputVal.password).toString();
-    navigate('/');
-  };
-
-  const signupHandler = () => {
-    if (inputVal.email === '') {
-      setIsValid({ ...isValid, isEmailValid: false });
-      return;
-    } else if (inputVal.password === '') {
-      setIsValid({ ...isValid, isPasswordValid: false });
-      return;
     } else if (inputVal.passwordConfirm === '') {
       setIsValid({ ...isValid, isPasswordConfirmValid: false });
       return;
     }
 
-    const hash = SHA256(inputVal.password).toString();
-    navigate('/login');
+    if (isValid.isEmailValid && isValid.isNicknameValid && isValid.isPasswordValid && isValid.isPasswordConfirmValid) {
+      try {
+        const response = await UserService.createUser(
+          inputVal.email,
+          inputVal.nickname,
+          SHA256(inputVal.password).toString()
+        );
+        alert(response);
+        navigate('/login');
+      } catch (error) {
+        alert(error.message);
+        if (error.name === 'EmailExistsError') {
+          setIsValid({ ...isValid, isEmailValid: false });
+        }
+      }
+    }
   };
 
   return (
@@ -94,7 +126,7 @@ const LoginSignUpForm = ({ type }) => {
             onChange={emailChangeHandler}
             isValid={isValid.isEmailValid}
           />
-          {type === 'login' && (
+          {type === 'signup' && (
             <Input
               icon={profileIcon}
               type="text"
@@ -124,7 +156,7 @@ const LoginSignUpForm = ({ type }) => {
           )}
         </InputContainer>
         <FooterBox>
-          <Button size="full" primary onClick={type === 'login' ? loginHandler : signupHandler}>
+          <Button size="full" onClick={type === 'login' ? loginHandler : signupHandler}>
             {type === 'login' ? '로그인' : '회원가입'}
           </Button>
           <ChangeBox>
@@ -150,7 +182,7 @@ const WallPaper = styled.img`
 
 const FormContainer = styled.div`
   width: 55vw;
-  padding: 20vh 13vw;
+  padding: 16vh 13vw;
 `;
 
 const Title = styled.div`
@@ -168,7 +200,9 @@ const InputContainer = styled.div`
 `;
 
 const FooterBox = styled.div`
-  margin-top: 6vh;
+  position: absolute;
+  width: 29vw;
+  top: 68vh;
 `;
 
 const ChangeBox = styled.div`
