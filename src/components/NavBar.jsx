@@ -17,66 +17,81 @@ const NavBar = () => {
   }
 
   return (
-    <NavContainer>
+    <NavbarContainer>
       <Navbar>
         {/* 로고옆에 파도아이콘있어도 나쁘지않을 것 같은데 일단 텍스트만 폰트입혀서.. */}
-        <Logo onClick={()=>logoClickHandler()}>Devwave</Logo>
-        <MiniProfile>
+        <Logo 
+          onClick={()=>logoClickHandler()}>
+            Devwave
+        </Logo>
+        <ProfileContainer>
           {/* 미니프로필에는 일단 사진없이 닉네임만 들어가도록 구현 */} 
-          <NickName>User</NickName>
+          <ProfileNickName 
+            onClick={()=>profileClickHandler()}>
+              Heewon
+          </ProfileNickName>
           <ProfileDropdown>
-            <span className="material-symbols-outlined" onClick={()=>profileClickHandler()}>
+            <span 
+              className="material-symbols-outlined" 
+              onClick={()=>profileClickHandler()}>
               expand_more
             </span>
           </ProfileDropdown>
-        </MiniProfile>
+        </ProfileContainer>
       </Navbar>
-    </NavContainer>
+    </NavbarContainer>
 
   ) 
 };
 
 export default React.memo(NavBar);
 
-const NavContainer = styled.div`
+const NavbarContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  margin-bottom: 30px;
 `
 const Navbar = styled.div`
+  box-sizing: border-box;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  width: 1100px;
-  height: 80px;
+  width: 1200px;
+  height: 120px;
   flex-shrink: 0;
-  margin-top: 15px;
-  padding: 0px 50px 20px;
+  margin: 20px 0px;
+  padding-bottom: 20px;
   border-bottom: 1px solid lightgray;
 `
 const Logo = styled.span`
-  font-size: 30px;
+  font-size: 40px;
   font-family: "Lemon", serif;
   font-weight: 700;
   font-style: normal;
+  cursor: pointer;
 `
-const MiniProfile = styled.div`
+const ProfileContainer = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  background-color: lightgray;
+  /* background-color: lightgray; */
   width: 130px;
-  height: 50px;
+  height: 40px;
   text-align: center;
   border-radius: 20px;
+  border: 3px solid lightgray;
   padding: 0px 10px;
 `
-const NickName = styled.span`
-  margin-left: 20px;
-  font-weight: 600;
+const ProfileNickName = styled.button`
+  margin-left: 5px;
+  background-color: transparent;
+  border: none;
+  font-size: 20px;
+  font-weight: 500;
   cursor: pointer;
   `
 const ProfileDropdown = styled.button`
