@@ -184,7 +184,7 @@ const WallPaper = styled.img`
 
 const FormContainer = styled.div`
   width: 55vw;
-  padding: 16vh 13vw;
+  padding: 18vh 13vw;
 `;
 
 const Title = styled.div`
@@ -204,7 +204,7 @@ const InputContainer = styled.div`
 const FooterBox = styled.div`
   position: absolute;
   width: 29vw;
-  top: 68vh;
+  top: 70vh;
   @media all and (max-height: 700px) {
     top: 480px;
   }

@@ -5,7 +5,7 @@ import AlertIcon from '../components/alert/AlertIcon';
 import Home from '../containers/Home';
 import Login from '../containers/Login';
 import SignUp from '../containers/SignUp';
-import NavBar from '../components/NavBar';
+import NavBar from '../components/navbar/NavBar';
 import Detail from '../containers/Detail';
 import Profile from '../containers/Profile';
 

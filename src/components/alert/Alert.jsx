@@ -56,9 +56,10 @@ const fadeOut = keyframes`
 `;
 
 const AlertWapper = styled.div`
+  z-index: 999;
   width: 100%;
   position: absolute;
-  top: 1vh;
+  top: 8vh;
   display: flex;
   justify-content: center;
 `;
@@ -68,6 +69,7 @@ const BoxStyles = css`
   align-items: center;
   width: 35vw;
   padding: 10px 20px;
+  border-radius: 3px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
   animation: ${({ visible }) => (visible ? fadeIn : fadeOut)} 0.3s ease-in-out;
   transition: opacity 0.3s ease-in-out;

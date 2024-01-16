@@ -70,7 +70,7 @@ const deleteUser = async (id) => {
   return userList;
 };
 
-module.export = { authenticateUser, createUser, updateUser, deleteUser };
+export { authenticateUser, createUser, updateUser, deleteUser };
 
 // 로그인 테스트
 // const loginTest = async () => {
