@@ -4,7 +4,7 @@ import styled from 'styled-components';
 const Input = ({ type, placeholder, icon, value, onChange, isValid }) => {
   return (
     <InputBox
-      icon={icon}
+      $icon={icon}
       type={type}
       placeholder={placeholder}
       value={value}
@@ -23,7 +23,7 @@ const InputBox = styled.input`
   background-repeat: no-repeat;
 
   &::-webkit-input-placeholder {
-    background-image: url(${(props) => props.icon});
+    background-image: url(${(props) => props.$icon});
     background-size: contain;
     background-position: 1px center;
     background-repeat: no-repeat;

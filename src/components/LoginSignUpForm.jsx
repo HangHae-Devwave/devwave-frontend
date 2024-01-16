@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { SHA256 } from 'crypto-js';
+import { useAlert } from '../contexts/AlertProvider';
 import * as UserService from '../server/userService';
 import styled from 'styled-components';
 import Button from './Button';
@@ -14,6 +15,7 @@ import checkIcon from '../assets/check-icon.svg';
 
 const LoginSignUpForm = ({ type }) => {
   const navigate = useNavigate();
+  const { showAlert } = useAlert();
 
   const [inputVal, setInputVal] = useState({ email: '', nickname: '', password: '', passwordConfirm: '' });
   const [isValid, setIsValid] = useState({
@@ -61,21 +63,23 @@ const LoginSignUpForm = ({ type }) => {
     }
 
     if (isValid.isEmailValid && isValid.isPasswordValid) {
-      try {
-        const token = await UserService.authenticateUser(inputVal.email, SHA256(inputVal.password).toString());
-        const decoded = jwtDecode(token);
-        localStorage.setItem('token', token);
-        localStorage.setItem('email', decoded.email);
-        localStorage.setItem('nickname', decoded.nickname);
-        navigate('/');
-      } catch (error) {
-        alert(error.message);
-        if (error.name === 'UserNotFoundError') {
-          setIsValid({ ...isValid, isEmailValid: false });
-        } else if (error.name === 'IncorrectPasswordError') {
-          setIsValid({ ...isValid, isPasswordValid: false });
-        }
-      }
+      await UserService.authenticateUser(inputVal.email, SHA256(inputVal.password).toString())
+        .then((token) => {
+          const decoded = jwtDecode(token);
+          localStorage.setItem('token', token);
+          localStorage.setItem('email', decoded.email);
+          localStorage.setItem('nickname', decoded.nickname);
+          showAlert('로그인 성공', 'success');
+          navigate('/');
+        })
+        .catch((error) => {
+          showAlert(error.message, 'error');
+          if (error.name === 'UserNotFoundError') {
+            setIsValid({ ...isValid, isEmailValid: false });
+          } else if (error.name === 'IncorrectPasswordError') {
+            setIsValid({ ...isValid, isPasswordValid: false });
+          }
+        });
     }
   };
 
@@ -95,20 +99,17 @@ const LoginSignUpForm = ({ type }) => {
     }
 
     if (isValid.isEmailValid && isValid.isNicknameValid && isValid.isPasswordValid && isValid.isPasswordConfirmValid) {
-      try {
-        const response = await UserService.createUser(
-          inputVal.email,
-          inputVal.nickname,
-          SHA256(inputVal.password).toString()
-        );
-        alert(response);
-        navigate('/login');
-      } catch (error) {
-        alert(error.message);
-        if (error.name === 'EmailExistsError') {
-          setIsValid({ ...isValid, isEmailValid: false });
-        }
-      }
+      await UserService.createUser(inputVal.email, inputVal.nickname, SHA256(inputVal.password).toString())
+        .then((response) => {
+          showAlert(response, 'success');
+          navigate('/login');
+        })
+        .catch((error) => {
+          showAlert(error.message, 'error');
+          if (error.name === 'EmailExistsError') {
+            setIsValid({ ...isValid, isEmailValid: false });
+          }
+        });
     }
   };
 
@@ -178,6 +179,7 @@ const Layout = styled.div`
 const WallPaper = styled.img`
   width: 45vw;
   height: 100vh;
+  min-height: 620px;
 `;
 
 const FormContainer = styled.div`
@@ -203,6 +205,9 @@ const FooterBox = styled.div`
   position: absolute;
   width: 29vw;
   top: 68vh;
+  @media all and (max-height: 700px) {
+    top: 480px;
+  }
 `;
 
 const ChangeBox = styled.div`

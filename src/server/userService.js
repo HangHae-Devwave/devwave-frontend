@@ -9,19 +9,19 @@ const userList = [
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// 새로운 함수: 이메일과 비밀번호로 사용자 인증을 수행하고 JWT 토큰을 반환
+// 이메일과 비밀번호로 사용자 인증을 수행하고 JWT 토큰을 반환
 const authenticateUser = async (email, password) => {
   const user = userList.find((u) => u.email === email);
 
   if (!user) {
     const error = new Error('존재하지 않는 계정입니다.');
-    error.name = 'UserNotFoundError'; // 에러 타입을 지정
+    error.name = 'UserNotFoundError';
     throw error;
   }
 
   if (user.password !== password) {
     const error = new Error('비밀번호가 틀렸습니다.');
-    error.name = 'IncorrectPasswordError'; // 에러 타입을 지정
+    error.name = 'IncorrectPasswordError';
     throw error;
   }
 
