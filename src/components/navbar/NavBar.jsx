@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import logo from '../../assets/devwave-logo.png';
 
 const NavBar = () => {
@@ -38,7 +38,7 @@ const NavBar = () => {
             // 로그인 상태일 때, 프로필과 로그아웃 버튼 표시
             <>
               {/* 미니프로필에는 일단 사진없이 닉네임만 들어가도록 구현 */}
-              <TextButton onClick={profileClickHandler}>Heewon</TextButton>
+              <TextButton onClick={profileClickHandler}>{localStorage.getItem('nickname')}</TextButton>
               <TextButton onClick={logoutHandler}>로그아웃</TextButton>
             </>
           ) : (

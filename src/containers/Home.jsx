@@ -2,25 +2,34 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import Modal from 'react-modal';
 import { useNavigate } from 'react-router-dom';
+import { MainLayout } from '../styles/GlobalStyles';
 
 const Home = () => {
   const [posts, setPosts] = useState([
     {
-      id: 1, title: "리액트 관련 질문있습니다!",
-      content: "리액트 질문내용", author: "hee1",
+      id: 1,
+      title: '리액트 관련 질문있습니다!',
+      content: '리액트 질문내용',
+      author: 'hee1',
     },
     {
-      id: 2, title: "스프링 관련 질문있습니다!",
-      content: "스프링 질문내용", author: "hee1",
+      id: 2,
+      title: '스프링 관련 질문있습니다!',
+      content: '스프링 질문내용',
+      author: 'hee1',
     },
     {
-      id: 3, title: "nodejs 관련 질문있습니다!",
-      content: "nodejs 질문내용", author: "hee1",
+      id: 3,
+      title: 'nodejs 관련 질문있습니다!',
+      content: 'nodejs 질문내용',
+      author: 'hee1',
     },
     {
-      id: 4, title: "css 관련 질문있습니다!",
-      content: "css 질문내용", author: "hee1",
-    }
+      id: 4,
+      title: 'css 관련 질문있습니다!',
+      content: 'css 질문내용',
+      author: 'hee1',
+    },
   ]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [title, setTitle] = useState('');
@@ -37,11 +46,11 @@ const Home = () => {
 
   const addPost = () => {
     if (title && content) {
-      const newPost = { 
-        id: Date.now(), 
-        title, 
+      const newPost = {
+        id: Date.now(),
+        title,
         content,
-        author
+        author,
       };
       setPosts([...posts, newPost]);
       closeModal();
@@ -57,57 +66,46 @@ const Home = () => {
   };
 
   return (
-    <Container>
-      <Header>
-        <Logo>새로운 게시글을 작성해보세요!</Logo>
-        <NewPostButton onClick={openModal}>New Post</NewPostButton>
-      </Header>
+    <MainLayout>
+      <Container>
+        <Header>
+          <Logo>새로운 게시글을 작성해보세요!</Logo>
+          <NewPostButton onClick={openModal}>New Post</NewPostButton>
+        </Header>
 
-      <Content>
-        {/* 게시물 목록 */}
-        <Posts>
-          {posts.map((post) => (
-            <Post
-              key={post.id}
-              onClick={()=>handlePostClick(post)}>
-              <PostTitle>{post.title}</PostTitle>
-              <PostContent>{post.content}</PostContent>
-              <Author>작성자 : {post.author}</Author>
-            </Post>
-          ))}
-        </Posts>
+        <Content>
+          {/* 게시물 목록 */}
+          <Posts>
+            {posts.map((post) => (
+              <Post key={post.id} onClick={() => handlePostClick(post)}>
+                <PostTitle>{post.title}</PostTitle>
+                <PostContent>{post.content}</PostContent>
+                <Author>작성자 : {post.author}</Author>
+              </Post>
+            ))}
+          </Posts>
 
-        {/* 모달 */}
-        <Modal 
-          isOpen={modalIsOpen}
-          onRequestClose={closeModal}
-          style={ModalStyle}
-        >
-          <ModalContainer>
-            <InputLabel>Title:</InputLabel>
-            <Input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-            <InputLabel>Content:</InputLabel>
-            <Textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-            />
-            <ButtonGroup>
-              <Button onClick={addPost}>게시하기</Button>
-              <Button onClick={closeModal}>닫기</Button>
-            </ButtonGroup>
-          </ModalContainer>
-        </Modal>
-      </Content>
-    </Container>
+          {/* 모달 */}
+          <Modal isOpen={modalIsOpen} onRequestClose={closeModal} style={ModalStyle}>
+            <ModalContainer>
+              <InputLabel>Title:</InputLabel>
+              <Input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
+              <InputLabel>Content:</InputLabel>
+              <Textarea value={content} onChange={(e) => setContent(e.target.value)} />
+              <ButtonGroup>
+                <Button onClick={addPost}>게시하기</Button>
+                <Button onClick={closeModal}>닫기</Button>
+              </ButtonGroup>
+            </ModalContainer>
+          </Modal>
+        </Content>
+      </Container>
+    </MainLayout>
   );
 };
 
 const Container = styled.div`
-  max-width: 1000px;
+  width: 80vw;
   margin: 0 auto;
 `;
 const Header = styled.div`
@@ -129,7 +127,7 @@ const NewPostButton = styled.button`
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  &:hover{
+  &:hover {
     transition: 0.3s ease;
     background-color: #494949;
     color: #24deffe4;
@@ -152,11 +150,10 @@ const Post = styled.div`
 `;
 const PostTitle = styled.h3`
   font-size: 25px;
-  `
+`;
 const PostContent = styled.p`
   font-size: 17px;
-
-`
+`;
 const Author = styled.p`
   position: absolute;
   bottom: 0;
@@ -204,7 +201,7 @@ const ButtonGroup = styled.div`
   gap: 10px;
   width: 700px;
   margin-top: 30px;
-`
+`;
 const Button = styled.button`
   background-color: #333;
   color: #fff;

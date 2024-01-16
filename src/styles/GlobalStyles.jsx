@@ -1,4 +1,4 @@
-import { createGlobalStyle } from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
 
 const GlobalStyles = createGlobalStyle`
   * {
@@ -33,4 +33,8 @@ const theme = {
   },
 };
 
-export { GlobalStyles, theme };
+const MainLayout = styled.div`
+  padding: 15vh 0;
+`;
+
+export { GlobalStyles, theme, MainLayout };
