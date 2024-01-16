@@ -48,6 +48,8 @@ class PostManager {
   }
 }
 
+// export default PostManager;
+
 const postManager = new PostManager();
 
 const test = async () => {
