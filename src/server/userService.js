@@ -1,3 +1,6 @@
+const { v4: uuidv4 } = require('uuid');
+const jwt = require('jwt-encode');
+
 const userList = [
   {
     id: 1,
@@ -26,7 +29,6 @@ const authenticateUser = async (email, password) => {
   }
 
   // 사용자 정보를 기반으로 JWT 토큰을 생성
-  const jwt = require('jwt-encode');
   const token = jwt({ id: user.id, email: user.email, nickname: user.nickname }, 'your-secret-key', {
     expiresIn: '1h',
   });
@@ -34,8 +36,6 @@ const authenticateUser = async (email, password) => {
 };
 
 const createUser = async (email, nickname, password) => {
-  const { v4: uuidv4 } = require('uuid');
-
   // 이메일 중복 확인
   const emailExists = userList.some((user) => user.email === email);
   if (emailExists) {
@@ -70,7 +70,7 @@ const deleteUser = async (id) => {
   return userList;
 };
 
-export { authenticateUser, createUser, updateUser, deleteUser };
+module.export = { authenticateUser, createUser, updateUser, deleteUser };
 
 // 로그인 테스트
 // const loginTest = async () => {

@@ -1,9 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const Button = ({ size, children, ...props }) => {
+const Button = ({ size, color, children, ...props }) => {
   return (
-    <StyledButton size={size} {...props}>
+    <StyledButton size={size} color={color} {...props}>
       {children}
     </StyledButton>
   );
@@ -12,7 +12,7 @@ const Button = ({ size, children, ...props }) => {
 const StyledButton = styled.button`
   padding: ${(props) => getButtonPadding(props.size)};
   width: ${(props) => getButtonWidth(props.size)};
-  background-color: ${(props) => props.theme.colors.primary};
+  background-color: ${(props) => getButtonColor(props)};
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -22,20 +22,38 @@ const StyledButton = styled.button`
   font-weight: bolder;
 
   &:hover {
-    background-color: rgba(0, 125, 250, 0.8);
+    background-color: ${(props) => getButtonHoverColor(props)};
   }
 `;
+
+const getButtonColor = (props) => {
+  switch (props.color) {
+    case 'primary':
+      return props.theme.colors.button.primary;
+    default:
+      return props.theme.colors.button.primary;
+  }
+};
+
+const getButtonHoverColor = (color) => {
+  switch (color) {
+    case 'primary':
+      return 'rgba(0, 125, 250, 0.8)';
+    default:
+      return 'rgba(0, 125, 250, 0.8)';
+  }
+};
 
 const getButtonWidth = (size) => {
   switch (size) {
     case 'small':
-      return '8px 16px';
+      return '30px';
     case 'medium':
-      return '12px 24px';
+      return '60px';
     case 'full':
       return '100%';
     default:
-      return '12px 24px';
+      return '30px';
   }
 };
 

@@ -5,8 +5,8 @@ import { SHA256 } from 'crypto-js';
 import { useAlert } from '../contexts/AlertProvider';
 import * as UserService from '../server/userService';
 import styled from 'styled-components';
-import Button from './Button';
-import Input from './Input';
+import Button from './button/Button';
+import Input from './input/Input';
 import wallpaperImg from '../assets/wave-login.JPG';
 import emailIcon from '../assets/email-icon.svg';
 import profileIcon from '../assets/profile-icon.svg';
@@ -157,7 +157,7 @@ const LoginSignUpForm = ({ type }) => {
           )}
         </InputContainer>
         <FooterBox>
-          <Button size="full" onClick={type === 'login' ? loginHandler : signupHandler}>
+          <Button size="full" color="primary" onClick={type === 'login' ? loginHandler : signupHandler}>
             {type === 'login' ? '로그인' : '회원가입'}
           </Button>
           <ChangeBox>
@@ -190,7 +190,7 @@ const FormContainer = styled.div`
 const Title = styled.div`
   font-size: 28px;
   font-weight: bolder;
-  color: ${(props) => props.theme.colors.text};
+  color: ${(props) => props.theme.colors.text.common};
   font-family: ${(props) => props.theme.fonts.title};
 `;
 
@@ -220,12 +220,12 @@ const ChangeBox = styled.div`
 
   & > div {
     font-weight: bolder;
-    color: ${(props) => props.theme.colors.text};
+    color: ${(props) => props.theme.colors.text.common};
   }
   & > a {
     font-weight: bolder;
     text-decoration: none;
-    color: ${(props) => props.theme.colors.primary};
+    color: ${(props) => props.theme.colors.button.primary};
 
     &:hover {
       color: rgba(0, 125, 250, 0.8);

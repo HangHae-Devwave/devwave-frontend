@@ -11,11 +11,15 @@ const GlobalStyles = createGlobalStyle`
 
 const theme = {
   colors: {
-    primary: '#007DFA',
-    secondary: '#2ecc71',
-    accent: '#e74c3c',
-    background: '#ecf0f1',
-    text: '#2F3367',
+    button: {
+      primary: '#007DFA',
+      secondary: '#2ecc71',
+      accent: '#e74c3c',
+      background: '#ecf0f1',
+    },
+    text: {
+      common: '#2F3367',
+    },
   },
 
   fonts: {

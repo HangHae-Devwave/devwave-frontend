@@ -6,6 +6,7 @@ const Alert = ({ status = 'error', children }) => {
   const { alertVal, hideAlert } = useAlert();
   let AlertBox;
 
+  // status에 따라 스타일 변경
   switch (status) {
     case 'error':
       AlertBox = ErrorBox;
@@ -20,6 +21,7 @@ const Alert = ({ status = 'error', children }) => {
       AlertBox = InfoBox;
   }
 
+  // 2초 뒤에 사라지는 Alert
   useEffect(() => {
     const timeoutId = setTimeout(() => hideAlert(), 2000);
 
@@ -83,11 +85,11 @@ const SuccessBox = styled.div`
 `;
 const WarningBox = styled.div`
   ${BoxStyles}
-  background-color: rgb(255, 195, 195);
+  background-color: rgba(251, 236, 204, 0.8);
 `;
 const InfoBox = styled.div`
   ${BoxStyles}
-  background-color: rgb(255, 195, 195);
+  background-color: rgba(197, 226, 246,0.8);
 `;
 
 export default Alert;
