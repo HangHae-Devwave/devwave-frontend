@@ -1,57 +1,48 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Modal from 'react-modal';
 import { useNavigate } from 'react-router-dom';
+import PostManager from '../server/post';
 
 const Home = () => {
-  const [posts, setPosts] = useState([
-    {
-      id: 1, title: "리액트 관련 질문있습니다!",
-      content: "리액트 질문내용", author: "hee1",
-    },
-    {
-      id: 2, title: "스프링 관련 질문있습니다!",
-      content: "스프링 질문내용", author: "hee1",
-    },
-    {
-      id: 3, title: "nodejs 관련 질문있습니다!",
-      content: "nodejs 질문내용", author: "hee1",
-    },
-    {
-      id: 4, title: "css 관련 질문있습니다!",
-      content: "css 질문내용", author: "hee1",
-    }
-  ]);
-  const [modalIsOpen, setModalIsOpen] = useState(false);
+
+  const postManager = new PostManager();
+
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [author, setAuthor] = useState('Admin');
+  const [posts, setPosts] = useState([]);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
 
+  // 모달창 열기/닫기 관련 
   const openModal = () => {
     setModalIsOpen(true);
   };
-
   const closeModal = () => {
     setModalIsOpen(false);
   };
 
-  const addPost = () => {
+  // 컴포넌트가 마운트될 때, getPostList사용하여 게시물 목록을 가져옴
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const postList = await postManager.getPostList();
+      setPosts(postList);
+    };
+    fetchPosts();
+  }, []);
+
+  // port.js에서 정의한 createPost사용
+  const addPost = async () => {
     if (title && content) {
-      const newPost = { 
-        id: Date.now(), 
-        title, 
-        content,
-        author
-      };
-      setPosts([...posts, newPost]);
+      const createdPost = await postManager.createPost(title, content);
+      setPosts([...posts, createdPost]);
       closeModal();
     } else {
       alert('제목과 내용을 입력해주세요.');
     }
   };
 
+  // 게시물 클릭시 게시물 상세페이지로 이동
   const navigate = useNavigate();
-
   const handlePostClick = (post) => {
     navigate(`/${post.id}`, { state: { post } });
   };
@@ -149,6 +140,7 @@ const Post = styled.div`
   padding: 10px;
   border-radius: 5px;
   margin-bottom: 20px;
+  cursor: pointer;
 `;
 const PostTitle = styled.h3`
   font-size: 25px;
