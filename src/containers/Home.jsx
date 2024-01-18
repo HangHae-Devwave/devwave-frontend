@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '../styles/GlobalStyles';
 import PostManager from '../server/postService';
 import spinner from '../assets/loading-spinner.gif';
+import PostItem from '../components/PostItem';
+import Button from '../components/button/Button';
 
 const Home = () => {
   // --- 희원 ---
@@ -16,24 +18,31 @@ const Home = () => {
 
   // --- 민지 ---
   const postManager = new PostManager();
-  const [inputVal, setInputVal] = useState({ title: '', content: '' });
+  const [inputVal, setInputVal] = useState({ type: 'board', title: '', content: '' });
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // 서버에서 데이터를 가져와서 로컬 상태에 설정하는 비동기 함수
     const fetchPosts = async () => {
+      // localStorage에 저장된 posts 데이터가 있다면
+      // 서버 호출하지 않고 localStorage 데이터를 posts에 저장
+      // if (localStorage.getItem('posts').length) {
+      //   setPosts(JSON.parse(localStorage.getItem('posts')));
+      // } else {
       // 서버에서 데이터를 가져오는 비동기 요청
       await postManager
         .getPostList()
         .then((response) => {
           localStorage.setItem('posts', JSON.stringify(response));
           setPosts(response);
-          setIsLoading(false);
+          console.log(response);
         })
         .catch((error) => {
           console.error(error);
         });
+      // }
+      setIsLoading(false);
     };
 
     // 컴포넌트가 마운트될 때 한 번 데이터를 가져오도록 호출
@@ -58,7 +67,7 @@ const Home = () => {
   // --- 민지 ---
   const addPost = () => {
     if (!!inputVal.title && !!inputVal.content) {
-      postManager.createPost(inputVal.title, inputVal.content);
+      postManager.createPost(inputVal.title, inputVal.content, localStorage.getItem('nickname'));
       // 모달 닫기
       toggleModalHandler();
     } else {
@@ -66,6 +75,7 @@ const Home = () => {
     }
   };
 
+  const typeChangeHandler = (type) => setInputVal({ ...inputVal, type });
   const titleChangeHandler = (e) => setInputVal({ ...inputVal, title: e.target.value });
   const contentChangeHandler = (e) => setInputVal({ ...inputVal, content: e.target.value });
   // ----------
@@ -75,7 +85,7 @@ const Home = () => {
       <Container>
         <Header>
           <Logo>새로운 게시글을 작성해보세요!</Logo>
-          <NewPostButton onClick={toggleModalHandler}>New Post</NewPostButton>
+          <Button onClick={toggleModalHandler}>New Post</Button>
         </Header>
 
         <Content>
@@ -84,11 +94,7 @@ const Home = () => {
           {!isLoading && (
             <Posts>
               {posts.map((post) => (
-                <Post key={post.id} onClick={() => handlePostClick(post)}>
-                  <PostTitle>{post.title}</PostTitle>
-                  <PostContent>{post.content}</PostContent>
-                  <Author>작성자 : {post.author}</Author>
-                </Post>
+                <PostItem key={post.id} onClick={() => handlePostClick(post)} post={post}></PostItem>
               ))}
             </Posts>
           )}
@@ -121,7 +127,6 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  background-color: #24deffe4;
   color: #494949;
   border-radius: 30px;
 `;
@@ -130,19 +135,19 @@ const Logo = styled.h1`
   font-size: 1.6em;
 `;
 
-const NewPostButton = styled.button`
-  background-color: #fff;
-  color: #333;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  &:hover {
-    transition: 0.3s ease;
-    background-color: #494949;
-    color: #24deffe4;
-  }
-`;
+// const NewPostButton = styled.button`
+//   background-color: #fff;
+//   color: #333;
+//   padding: 8px 16px;
+//   border: none;
+//   border-radius: 5px;
+//   cursor: pointer;
+//   &:hover {
+//     transition: 0.3s ease;
+//     background-color: #494949;
+//     color: #24deffe4;
+//   }
+// `;
 
 const Content = styled.div`
   padding: 20px;
@@ -156,32 +161,7 @@ const Posts = styled.div`
   display: flex;
   flex-direction: column;
   font-size: 25px;
-`;
-
-const Post = styled.div`
-  position: relative;
-  background-color: #f0f0f0;
-  padding: 10px;
-  border-radius: 5px;
-  margin-bottom: 20px;
-`;
-
-const PostTitle = styled.h3`
-  font-size: 25px;
-`;
-
-const PostContent = styled.p`
-  font-size: 17px;
-`;
-
-const Author = styled.p`
-  position: absolute;
-  bottom: 0;
-  right: 20px;
-  margin-top: 8px;
-  font-style: italic;
-  color: #555;
-  font-size: 17px;
+  gap: 30px;
 `;
 
 const ModalStyle = {
@@ -229,13 +209,13 @@ const ButtonGroup = styled.div`
   margin-top: 30px;
 `;
 
-const Button = styled.button`
-  background-color: #333;
-  color: #fff;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-`;
+// const Button = styled.button`
+//   background-color: #333;
+//   color: #fff;
+//   padding: 8px 16px;
+//   border: none;
+//   border-radius: 5px;
+//   cursor: pointer;
+// `;
 
 export default React.memo(Home);
