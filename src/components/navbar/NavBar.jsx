@@ -68,6 +68,7 @@ const NavbarContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  /* z-index: 1; */
 `;
 
 const Navbar = styled.div`
