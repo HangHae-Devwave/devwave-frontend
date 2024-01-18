@@ -45,8 +45,8 @@ const createUser = async (email, nickname, password) => {
   }
 
   // 새로운 유저 생성
-  const uniqueId = uuidv4();
   await sleep(1000);
+  const uniqueId = uuidv4();
   const id = uniqueId;
   const newUser = { id, email, nickname, password };
   userList.push(newUser);

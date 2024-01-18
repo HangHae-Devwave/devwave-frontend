@@ -1,71 +1,93 @@
+const { v4: uuidv4 } = require('uuid');
+
 class PostManager {
   constructor() {
-    this.postList = JSON.parse(localStorage.getItem('posts')) || [
-      { id: 1, title: 'title1', content: 'content1' },
-      { id: 2, title: 'title2', content: 'content2' },
-      { id: 3, title: 'title3', content: 'content3' },
+    this.posts = [
+      {
+        id: 1,
+        title: '리액트 관련 질문있습니다!',
+        content: '리액트 질문내용',
+        author: 'hee1',
+      },
+      {
+        id: 2,
+        title: '스프링 관련 질문있습니다!',
+        content: '스프링 질문내용',
+        author: 'hee1',
+      },
+      {
+        id: 3,
+        title: 'nodejs 관련 질문있습니다!',
+        content: 'nodejs 질문내용',
+        author: 'hee1',
+      },
+      {
+        id: 4,
+        title: 'css 관련 질문있습니다!',
+        content: 'css 질문내용',
+        author: 'hee1',
+      },
     ];
   }
 
-  sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
+  sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   async getPostList() {
     await this.sleep(1000);
-    return this.postList;
+    return this.posts;
   }
 
   async getPost(id) {
     await this.sleep(1000);
-    return this.postList.find((post) => post.id === id);
+    return this.posts.find((post) => post.id === id);
   }
 
   async createPost(title, content) {
     await this.sleep(1000);
-    const id = Date.now();
+    const uniqueId = uuidv4();
+    const id = uniqueId;
     const post = { id, title, content };
-    this.postList.push(post);
-    localStorage.setItem('posts', JSON.stringify(this.postList));
+    this.posts.push(post);
+    localStorage.setItem('posts', JSON.stringify(this.posts));
     return post;
   }
 
   async updatePost(id, title, content) {
     await this.sleep(1000);
-    const post = this.postList.find((post) => post.id === id);
+    const post = this.posts.find((post) => post.id === id);
     post.title = title;
     post.content = content;
-    localStorage.setItem('posts', JSON.stringify(this.postList));
+    localStorage.setItem('posts', JSON.stringify(this.posts));
     return post;
   }
 
   async deletePost(id) {
     await this.sleep(1000);
-    const index = this.postList.findIndex((post) => post.id === id);
-    this.postList.splice(index, 1);
-    localStorage.setItem('posts', JSON.stringify(this.postList));
-    return this.postList;
+    const index = this.posts.findIndex((post) => post.id === id);
+    this.posts.splice(index, 1);
+    localStorage.setItem('posts', JSON.stringify(this.posts));
+    return this.posts;
   }
 }
 
-// export default PostManager;
+export default PostManager;
 
-const postManager = new PostManager();
+// const postManager = new PostManager();
 
-const test = async () => {
-  const postList = await postManager.getPostList();
-  console.log(postList);
+// const test = async () => {
+//   const posts = await postManager.getPostList();
+//   console.log(posts);
 
-  const post = await postManager.getPost(1);
-  console.log(post);
+//   const post = await postManager.getPost(1);
+//   console.log(post);
 
-  const createdPost = await postManager.createPost('title4', 'content4');
-  console.log(createdPost);
+//   const createdPost = await postManager.createPost('title4', 'content4');
+//   console.log(createdPost);
 
-  const updatedPost = await postManager.updatePost(1, 'title1-1', 'content1-1');
-  console.log(updatedPost);
+//   const updatedPost = await postManager.updatePost(1, 'title1-1', 'content1-1');
+//   console.log(updatedPost);
 
-  const deletedPostId = await postManager.deletePost(1);
-  console.log(deletedPostId);
-};
-test();
+//   const deletedPostId = await postManager.deletePost(1);
+//   console.log(deletedPostId);
+// };
+// test();
