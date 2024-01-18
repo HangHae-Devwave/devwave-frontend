@@ -3,10 +3,11 @@ const jwt = require('jwt-encode');
 
 const userList = [
   {
-    id: 1,
+    id: '1',
     email: 'mini0006@naver.com',
     nickname: '곽민지',
     password: 'af5b0d44597f831e45e958249f0320df71dae8cedb12bdaab61d1cf4111a8874',
+    profileImg: '',
   },
 ];
 
@@ -29,9 +30,13 @@ const authenticateUser = async (email, password) => {
   }
 
   // 사용자 정보를 기반으로 JWT 토큰을 생성
-  const token = jwt({ id: user.id, email: user.email, nickname: user.nickname }, 'your-secret-key', {
-    expiresIn: '1h',
-  });
+  const token = jwt(
+    { id: user.id, email: user.email, nickname: user.nickname, profileImg: user.profileImg },
+    'your-secret-key',
+    {
+      expiresIn: '1h',
+    }
+  );
   return token;
 };
 
@@ -45,21 +50,35 @@ const createUser = async (email, nickname, password) => {
   }
 
   // 새로운 유저 생성
-  const uniqueId = uuidv4();
   await sleep(1000);
+  const uniqueId = uuidv4();
   const id = uniqueId;
-  const newUser = { id, email, nickname, password };
+  const profileImg = '';
+  const newUser = { id, email, nickname, password, profileImg };
   userList.push(newUser);
 
   return '회원가입 성공';
 };
 
-const updateUser = async (id, email, nickname, password) => {
+const modifyUserInfo = async (id, email, nickname) => {
   await sleep(1000);
   const user = userList.find((user) => user.id === id);
   user.email = email;
   user.nickname = nickname;
+  return user;
+};
+
+const modifyUserPassword = async (id, password) => {
+  await sleep(1000);
+  const user = userList.find((user) => user.id === id);
   user.password = password;
+  return;
+};
+
+const modifyUserImg = async (id, profileImg) => {
+  await sleep(1000);
+  const user = userList.find((user) => user.id === id);
+  user.profileImg = profileImg;
   return user;
 };
 
@@ -70,7 +89,7 @@ const deleteUser = async (id) => {
   return userList;
 };
 
-export { authenticateUser, createUser, updateUser, deleteUser };
+export { authenticateUser, createUser, modifyUserInfo, modifyUserPassword, modifyUserImg, deleteUser };
 
 // 로그인 테스트
 // const loginTest = async () => {

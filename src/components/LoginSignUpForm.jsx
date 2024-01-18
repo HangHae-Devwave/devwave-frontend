@@ -67,8 +67,10 @@ const LoginSignUpForm = ({ type }) => {
         .then((token) => {
           const decoded = jwtDecode(token);
           localStorage.setItem('token', token);
+          localStorage.setItem('id', decoded.id);
           localStorage.setItem('email', decoded.email);
           localStorage.setItem('nickname', decoded.nickname);
+          localStorage.setItem('profileImg', decoded.profileImg);
           showAlert('로그인 성공', 'success');
           navigate('/');
         })

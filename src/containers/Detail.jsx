@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
-import { useLocation, useNavigate } from 'react-router-dom'; 
+import { useLocation, useNavigate } from 'react-router-dom';
 import { MainLayout } from '../styles/GlobalStyles';
 
 const Detail = () => {
-
   // Home.jsx에서 데이터 가져옴
   const location = useLocation().state;
   const postTitle = location.post.title;
@@ -20,23 +19,18 @@ const Detail = () => {
   //   console.log(postComments);
   // }, [])
 
-
   // 이전 페이지로 돌아가기 기능을 위한 navigate
   const navigate = useNavigate();
   const previousPageHandler = () => {
     navigate('/');
-  }
+  };
 
   return (
     <MainLayout>
       <Container>
         {/* 이전으로 돌아가기 버튼 */}
-        <PreviousPageGroup
-          onClick={previousPageHandler}>
-          <span 
-            className="material-symbols-outlined">
-            undo
-          </span>
+        <PreviousPageGroup onClick={previousPageHandler}>
+          <span className="material-symbols-outlined">undo</span>
           이전 페이지로 돌아가기
         </PreviousPageGroup>
 
@@ -46,12 +40,8 @@ const Detail = () => {
           <Author>작성자: {postAuthor}</Author>
           <Content>{postContent}</Content>
           <ButtonGroup>
-            <EditButton>
-              수정
-            </EditButton>
-            <DeleteButton>
-              삭제
-            </DeleteButton>
+            <EditButton>수정</EditButton>
+            <DeleteButton>삭제</DeleteButton>
           </ButtonGroup>
         </ContentWrapper>
 
@@ -70,7 +60,6 @@ const Detail = () => {
             <ReplyInput />
             <ReplyButton>작성</ReplyButton>
         </InputSection> */}
-
       </Container>
     </MainLayout>
   );
@@ -86,13 +75,13 @@ const PreviousPageGroup = styled.div`
   align-items: center;
   margin-bottom: 10px;
   cursor: pointer;
-`
+`;
 const ContentWrapper = styled.div`
   position: relative;
   background-color: #e8e8e8;
   padding: 15px;
   border-radius: 8px;
-  margin-bottom: 20px; 
+  margin-bottom: 20px;
 `;
 const Title = styled.h1`
   font-size: 30px;
@@ -115,7 +104,7 @@ const ButtonGroup = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-`
+`;
 const EditButton = styled.button`
   width: 100px;
   height: 30px;
@@ -123,17 +112,17 @@ const EditButton = styled.button`
   border: 2px solid #24deffe4;
   background-color: white;
   font-weight: 700;
-  `
-  const DeleteButton  = styled.button`
+`;
+const DeleteButton = styled.button`
   width: 100px;
   height: 30px;
   border-radius: 10px;
   border: 2px solid #24deffe4;
   background-color: white;
   font-weight: 700;
-`
+`;
 const CommentSection = styled.div`
-  margin-top: 20px; 
+  margin-top: 20px;
 `;
 const CommentTitle = styled.h2`
   font-size: 24px;
@@ -169,6 +158,4 @@ const CommentText = styled.p`
 // `
 // const ReplyButton = styled.button`
 
-// `
-
-  export default React.memo(Detail);
+export default React.memo(Detail);

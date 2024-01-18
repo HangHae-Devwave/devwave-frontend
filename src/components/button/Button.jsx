@@ -47,13 +47,13 @@ const getButtonHoverColor = (color) => {
 const getButtonWidth = (size) => {
   switch (size) {
     case 'small':
-      return '30px';
+      return '5vw';
     case 'medium':
-      return '60px';
+      return '8vw';
     case 'full':
       return '100%';
     default:
-      return '30px';
+      return '8vw';
   }
 };
 
