@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { MainLayout } from '../styles/GlobalStyles';
 
 const Detail = () => {
@@ -90,18 +90,18 @@ const CommentTitle = styled.h2`
   font-size: 24px;
   margin-bottom: 10px;
 `;
-const Comment = styled.div`
-  background-color: #f0f0f0;
-  padding: 10px;
-  border-radius: 5px;
-  margin-bottom: 15px;
-`;
-const CommentAuthor = styled.p`
-  font-weight: bold;
-  font-size: 20px;
-`;
-const CommentText = styled.p`
-  font-size: 17px;
-`;
+// const Comment = styled.div`
+//   background-color: #f0f0f0;
+//   padding: 10px;
+//   border-radius: 5px;
+//   margin-bottom: 15px;
+// `;
+// const CommentAuthor = styled.p`
+//   font-weight: bold;
+//   font-size: 20px;
+// `;
+// const CommentText = styled.p`
+//   font-size: 17px;
+// `;
 
 export default React.memo(Detail);

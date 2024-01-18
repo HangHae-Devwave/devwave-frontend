@@ -1,15 +1,13 @@
 import React from 'react';
 import styled from 'styled-components';
-import basicUserIcon from '../assets/basic-user-icon.svg';
+import ProfileImg from './ProfileImg';
 
 const PostItem = ({ post, onClick }) => {
   return (
     <Post onClick={onClick}>
       <InfoContainer>
         <ProfileBox>
-          <ImgBox>
-            <img src={basicUserIcon} alt="" />
-          </ImgBox>
+          <ProfileImg />
           <div>
             <Author>{post.author}</Author>
             <BoardType>{post.type}</BoardType>
@@ -38,18 +36,6 @@ const ProfileBox = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
-`;
-
-const ImgBox = styled.div`
-  width: 30px;
-  height: 30px;
-  border-radius: 70%;
-  overflow: hidden;
-  & > img {
-    width: 100%;
-    height: 100%;
-    object-fit: 100%;
-  }
 `;
 
 const Author = styled.p`

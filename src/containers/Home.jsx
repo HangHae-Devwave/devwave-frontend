@@ -36,7 +36,6 @@ const Home = () => {
         .then((response) => {
           localStorage.setItem('posts', JSON.stringify(response));
           setPosts(response);
-          console.log(response);
         })
         .catch((error) => {
           console.error(error);
