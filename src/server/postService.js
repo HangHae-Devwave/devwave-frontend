@@ -2,7 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 
 class PostManager {
   constructor() {
-    this.posts = [
+    this.posts = JSON.parse(localStorage.getItem('posts')) || [
       {
         id: 1,
         title: '리액트 관련 질문있습니다!',
@@ -48,7 +48,6 @@ class PostManager {
     const id = uniqueId;
     const post = { id, title, content };
     this.posts.push(post);
-    localStorage.setItem('posts', JSON.stringify(this.posts));
     return post;
   }
 
@@ -57,7 +56,6 @@ class PostManager {
     const post = this.posts.find((post) => post.id === id);
     post.title = title;
     post.content = content;
-    localStorage.setItem('posts', JSON.stringify(this.posts));
     return post;
   }
 
@@ -65,7 +63,6 @@ class PostManager {
     await this.sleep(1000);
     const index = this.posts.findIndex((post) => post.id === id);
     this.posts.splice(index, 1);
-    localStorage.setItem('posts', JSON.stringify(this.posts));
     return this.posts;
   }
 }

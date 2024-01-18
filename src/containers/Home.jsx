@@ -27,7 +27,7 @@ const Home = () => {
       await postManager
         .getPostList()
         .then((response) => {
-          localStorage.setItem('posts', response);
+          localStorage.setItem('posts', JSON.stringify(response));
           setPosts(response);
           setIsLoading(false);
         })
