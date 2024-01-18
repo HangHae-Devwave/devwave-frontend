@@ -4,9 +4,9 @@ import Modal from 'react-modal';
 import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '../styles/GlobalStyles';
 import PostManager from '../server/postService';
-import spinner from '../assets/loading-spinner.gif';
 import PostItem from '../components/PostItem';
 import Button from '../components/button/Button';
+import Loading from '../components/Loading';
 
 const Home = () => {
   // --- 희원 ---
@@ -90,7 +90,7 @@ const Home = () => {
 
         <Content>
           {/* 게시물 목록 */}
-          {isLoading && <img src={spinner} alt="" />}
+          {isLoading && <Loading />}
           {!isLoading && (
             <Posts>
               {posts.map((post) => (
