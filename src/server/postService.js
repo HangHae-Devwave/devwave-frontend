@@ -22,11 +22,15 @@ class PostManager {
       { id: 2, 
         title: 'Spring 질문 title', 
         content: 'Spring 질문 content', 
-        author: "hee1" },
+        author: "hee1" ,
+        comment: []
+      },
       { id: 3, 
         title: 'NodeJs 질문 title', 
         content: 'NodeJs 질문 content', 
-        author: "hee1" },
+        author: "hee1" ,
+        comment: []
+      },
     ];
   }
 
@@ -47,10 +51,11 @@ class PostManager {
   }
 
   // Home에 게시물 생성하기
-  async createPost(title, content) {
-    await this.sleep(1000);
+  async createPost(title, content, author) {
+    // await this.sleep(1000);
     const id = Date.now();
-    const post = { id, title, content };
+    const comment = [{}];
+    const post = { id, title, content, author, comment};
     this.postList.push(post);
     localStorage.setItem('posts', JSON.stringify(this.postList));
     return post;

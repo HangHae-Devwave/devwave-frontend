@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useLocation, useNavigate } from 'react-router-dom'; 
+import { MainLayout } from '../styles/GlobalStyles';
 
 const Detail = () => {
 
@@ -9,22 +10,15 @@ const Detail = () => {
   const postTitle = location.post.title;
   const postAuthor = location.post.author;
   const postContent = location.post.content;
-  const postComments = location.post.comment;
+  const postComments = location.post.comment || [];
 
-  useEffect(()=>{
-    console.log(location);
-    console.log(postTitle);
-    console.log(postAuthor);
-    console.log(postContent);
-    console.log(postComments);
-  }, [])
-
-  const editButtonHandler = () => {
-
-  }
-  const deleteButtonHandler = () => {
-
-  }
+  // useEffect(()=>{
+  //   console.log(location);
+  //   console.log(postTitle);
+  //   console.log(postAuthor);
+  //   console.log(postContent);
+  //   console.log(postComments);
+  // }, [])
 
 
   // 이전 페이지로 돌아가기 기능을 위한 navigate
@@ -34,52 +28,51 @@ const Detail = () => {
   }
 
   return (
-    <Container>
+    <MainLayout>
+      <Container>
+        {/* 이전으로 돌아가기 버튼 */}
+        <PreviousPageGroup
+          onClick={previousPageHandler}>
+          <span 
+            className="material-symbols-outlined">
+            undo
+          </span>
+          이전 페이지로 돌아가기
+        </PreviousPageGroup>
 
-      {/* 이전으로 돌아가기 버튼 */}
-      <PreviousPageGroup
-        onClick={previousPageHandler}>
-        <span 
-          className="material-symbols-outlined">
-          undo
-        </span>
-        이전 페이지로 돌아가기
-      </PreviousPageGroup>
+        {/* 게시물 영역 */}
+        <ContentWrapper>
+          <Title>{postTitle}</Title>
+          <Author>작성자: {postAuthor}</Author>
+          <Content>{postContent}</Content>
+          <ButtonGroup>
+            <EditButton>
+              수정
+            </EditButton>
+            <DeleteButton>
+              삭제
+            </DeleteButton>
+          </ButtonGroup>
+        </ContentWrapper>
 
-      {/* 게시물 영역 */}
-      <ContentWrapper>
-        <Title>{postTitle}</Title>
-        <Author>작성자: {postAuthor}</Author>
-        <Content>{postContent}</Content>
-        <ButtonGroup>
-          <EditButton
-            onClick={()=>editButtonHandler()}>
-            수정
-          </EditButton>
-          <DeleteButton
-            onClick={()=>deleteButtonHandler()}>
-            삭제
-          </DeleteButton>
-        </ButtonGroup>
-      </ContentWrapper>
+        {/* 댓글 영역 */}
+        <CommentSection>
+          <CommentTitle>댓글</CommentTitle>
+          {postComments.map((comment) => (
+            <Comment key={comment.replyId}>
+              <CommentAuthor>{comment.replyAuthor}</CommentAuthor>
+              <CommentText>{comment.replyContent}</CommentText>
+            </Comment>
+          ))}
+        </CommentSection>
 
-      {/* 댓글 영역 */}
-      <CommentSection>
-        <CommentTitle>댓글</CommentTitle>
-        {postComments.map((comment) => (
-          <Comment key={comment.replyId}>
-            <CommentAuthor>{comment.replyAuthor}</CommentAuthor>
-            <CommentText>{comment.replyContent}</CommentText>
-          </Comment>
-        ))}
-      </CommentSection>
+        {/* <InputSection>
+            <ReplyInput />
+            <ReplyButton>작성</ReplyButton>
+        </InputSection> */}
 
-      <InputSection>
-          <ReplyInput />
-          <ReplyButton>작성</ReplyButton>
-      </InputSection>
-
-    </Container>
+      </Container>
+    </MainLayout>
   );
 };
 
@@ -117,7 +110,6 @@ const Content = styled.p`
 const ButtonGroup = styled.div`
   position: absolute;
   width: 210px;
-  /* background-color: red; */
   right: 15px;
   bottom: 15px;
   display: flex;
@@ -160,23 +152,23 @@ const CommentAuthor = styled.p`
 const CommentText = styled.p`
   font-size: 17px;
 `;
-const InputSection = styled.div`
-  position: fixed;
-  width: 800px;
-  height: 100px;
-  bottom: 10px;
-  border-radius: 10px;
-  background-color: green;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-`
-const ReplyInput = styled.input`
+// const InputSection = styled.div`
+//   position: fixed;
+//   width: 800px;
+//   height: 100px;
+//   bottom: 10px;
+//   border-radius: 10px;
+//   background-color: green;
+//   display: flex;
+//   flex-direction: row;
+//   align-items: center;
+//   justify-content: center;
+// `
+// const ReplyInput = styled.input`
 
-`
-const ReplyButton = styled.button`
+// `
+// const ReplyButton = styled.button`
 
-`
+// `
 
   export default React.memo(Detail);

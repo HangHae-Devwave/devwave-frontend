@@ -1,45 +1,56 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import Modal from 'react-modal';
 import { useNavigate } from 'react-router-dom';
-import PostManager from '../server/post';
+import { MainLayout } from '../styles/GlobalStyles';
+import PostManager from '../server/postService';
+// chakra modal 
+import { useDisclosure } from '@chakra-ui/react-use-disclosure';
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+} from '@chakra-ui/react';
+import { Wrap, WrapItem } from '@chakra-ui/react'
+// chakra toast
+import { useToast } from '@chakra-ui/react'
+
 
 const Home = () => {
-
+  // 기본 title, content state
+  // const [title, setTitle] = useState('');
+  // const [content, setContent] = useState('');
+  // 게시물 CRUD관련 클래스 객체 생성
   const postManager = new PostManager();
-
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  // 게시물 데이터 상태관리
   const [posts, setPosts] = useState([]);
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-
-  // 모달창 열기/닫기 관련 
-  const openModal = () => {
-    setModalIsOpen(true);
-  };
-  const closeModal = () => {
-    setModalIsOpen(false);
-  };
+  // 게시물 작성시 사용되는 state
+  const [newTitle, setNewTitle] = useState(''); 
+  const [newContent, setNewContent] = useState('');
+  // 모달관련 함수 호출
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  // 토스트 메시지 관련 toast 생성
+  const toast = useToast();
+  const [currentUser, setCurrentUser] = useState('');
 
   // 컴포넌트가 마운트될 때, getPostList사용하여 게시물 목록을 가져옴
   useEffect(() => {
     const fetchPosts = async () => {
       const postList = await postManager.getPostList();
       setPosts(postList);
+      if(localStorage.getItem('token')){
+        setCurrentUser(localStorage.getItem('nickname'))
+      }
     };
     fetchPosts();
   }, []);
-
-  // port.js에서 정의한 createPost사용
-  const addPost = async () => {
-    if (title && content) {
-      const createdPost = await postManager.createPost(title, content);
-      setPosts([...posts, createdPost]);
-      closeModal();
-    } else {
-      alert('제목과 내용을 입력해주세요.');
-    }
-  };
 
   // 게시물 클릭시 게시물 상세페이지로 이동
   const navigate = useNavigate();
@@ -47,58 +58,110 @@ const Home = () => {
     navigate(`/${post.id}`, { state: { post } });
   };
 
+  // 새 게시글 작성 및 저장하는 함수
+  const saveNewPost = async (position) => {
+    const createdPost = await postManager.createPost(newTitle, newContent, currentUser);
+    if(!currentUser){
+      alert("로그인을 해야 글을 작성할 수 있습니다.")
+      return
+    }
+    // 기존 게시물 목록에 새 게시글 추가 후 상태 업데이트
+    setPosts((prevPosts) => [...prevPosts, createdPost]);
+    // 모달 닫기 및 입력 폼 초기화
+    onClose();
+    setNewTitle('');
+    setNewContent('');
+    // 성공적인 게시물 작성 토스트 메시지 표시
+    toast({
+      title: '새로운 게시물 작성',
+      description: '새 게시물이 성공적으로 작성되었습니다.',
+      position: position,
+      isClosable: true,
+      status: 'success',
+      duration: 4000,
+    });
+  };
+
+  // 게시글 작성완료 토스트 관련
+  const positions = [
+    'top',
+  ]
+
   return (
-    <Container>
-      <Header>
-        <Logo>새로운 게시글을 작성해보세요!</Logo>
-        <NewPostButton onClick={openModal}>New Post</NewPostButton>
-      </Header>
+    <MainLayout>
+      <Container>
+        <Header>
+          <Logo>새로운 게시글을 작성해보세요!</Logo>
+          <NewPostButton onClick={onOpen}>
+              New Post
+          </NewPostButton>
+        </Header>
 
-      <Content>
-        {/* 게시물 목록 */}
-        <Posts>
-          {posts.map((post) => (
-            <Post
-              key={post.id}
-              onClick={()=>handlePostClick(post)}>
-              <PostTitle>{post.title}</PostTitle>
-              <PostContent>{post.content}</PostContent>
-              <Author>작성자 : {post.author}</Author>
-            </Post>
-          ))}
-        </Posts>
+        <Content>
+          {/* 게시물 목록 */}
+          <Posts>
+            {posts.map((post) => (
+              <Post key={post.id} onClick={() => handlePostClick(post)}>
+                <PostTitle>{post.title}</PostTitle>
+                <PostContent>{post.content}</PostContent>
+                <Author>작성자 : {post.author}</Author>
+              </Post>
+            ))}
+          </Posts>
 
-        {/* 모달 */}
-        <Modal 
-          isOpen={modalIsOpen}
-          onRequestClose={closeModal}
-          style={ModalStyle}
-        >
-          <ModalContainer>
-            <InputLabel>Title:</InputLabel>
-            <Input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-            <InputLabel>Content:</InputLabel>
-            <Textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-            />
-            <ButtonGroup>
-              <Button onClick={addPost}>게시하기</Button>
-              <Button onClick={closeModal}>닫기</Button>
-            </ButtonGroup>
-          </ModalContainer>
-        </Modal>
-      </Content>
-    </Container>
+          {/* Chakra UI Modal */}
+          <Modal isOpen={isOpen} onClose={onClose} isCentered >
+            <ModalOverlay />
+            <ModalContent>
+
+              <ModalHeader>Create a Post</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
+
+                {/* Modal Input */}
+                <FormControl>
+                  <FormLabel>Title</FormLabel>
+                  <Input
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    placeholder="Enter New Title"
+                    />
+                </FormControl>
+                <FormControl mt={4}>
+                  <FormLabel>Content</FormLabel>
+                  <Input
+                    value={newContent}
+                    onChange={(e) => setNewContent(e.target.value)}
+                    placeholder="Enter New Content"
+                    h={400}
+                  />
+                </FormControl>
+              </ModalBody>
+
+              {/* Modal Button */}
+              <ModalFooter>
+                <Wrap>
+                  {positions.map((position, i) => (
+                    <WrapItem key={i}>
+                      <Button colorScheme="blue" mr={3} onClick={()=>saveNewPost(position)}>
+                        Save
+                      </Button>
+                    </WrapItem>
+                  ))}
+                </Wrap>
+                <Button onClick={onClose}>Cancel</Button>
+              </ModalFooter>
+
+            </ModalContent>
+          </Modal>
+        </Content>
+      </Container>
+    </MainLayout>
   );
 };
 
 const Container = styled.div`
-  max-width: 1000px;
+  width: 80vw;
   margin: 0 auto;
 `;
 const Header = styled.div`
@@ -114,13 +177,13 @@ const Logo = styled.h1`
   font-size: 1.6em;
 `;
 const NewPostButton = styled.button`
-  background-color: #fff;
+  background-color: #fff; 
   color: #333;
   padding: 8px 16px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  &:hover{
+  &:hover {
     transition: 0.3s ease;
     background-color: #494949;
     color: #24deffe4;
@@ -144,11 +207,10 @@ const Post = styled.div`
 `;
 const PostTitle = styled.h3`
   font-size: 25px;
-  `
+`;
 const PostContent = styled.p`
   font-size: 17px;
-
-`
+`;
 const Author = styled.p`
   position: absolute;
   bottom: 0;
@@ -157,53 +219,6 @@ const Author = styled.p`
   font-style: italic;
   color: #555;
   font-size: 17px;
-`;
-const ModalStyle = {
-  content: {
-    maxWidth: '700px',
-    height: '500px',
-    margin: 'auto',
-    borderRadius: '8px',
-    padding: '20px',
-  },
-  overlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-};
-const ModalContainer = styled.div`
-  position: abo;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-const InputLabel = styled.label`
-  font-weight: bold;
-`;
-const Input = styled.input`
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-`;
-const Textarea = styled.textarea`
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  min-height: 250px;
-`;
-const ButtonGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 700px;
-  margin-top: 30px;
-`
-const Button = styled.button`
-  background-color: #333;
-  color: #fff;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
 `;
 
 export default React.memo(Home);
