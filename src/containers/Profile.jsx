@@ -27,9 +27,13 @@ const Profile = () => {
   // 모달 관련
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  // 토스트 관련
-  const toast = useToast();
-  const positions = ['top'];
+  // 토스트 관련 ( 스타일만 )
+  const toast = useToast({
+    position: 'top',
+    isClosable: true,
+    status: 'success',
+    duration: 4000,
+  });
 
   // 사용자 정보관련
   const [userInfo, setUserInfo] = useState({
@@ -41,7 +45,7 @@ const Profile = () => {
   const [uploadImgUrl, setUploadImgUrl] = useState(localStorage.getItem('profileImg') || basicUserIcon);
 
   // 정보 저장 함수 + 토스트 출력
-  const saveEditedInfo = (position) => {
+  const saveEditedInfo = () => {
     // 로컬스토리지에 저장된 값 수정
     localStorage.setItem('nickname', editedNickname);
     localStorage.setItem('email', editedEmail);
@@ -52,14 +56,10 @@ const Profile = () => {
     });
     // 모달창 닫음
     onClose();
-    // 토스트 메시지
+    // 토스트 메시지 ( 로직만 )
     toast({
       title: `사용자 정보 수정`,
       description: '변경사항이 저장되었습니다.',
-      position: position,
-      isClosable: true,
-      status: 'success',
-      duration: 4000,
     });
   };
 
@@ -130,6 +130,7 @@ const Profile = () => {
           <ModalContent>
             <ModalHeader>Edit your profile</ModalHeader>
             <ModalCloseButton />
+            
             <ModalBody>
               {/* Modal Input */}
               <FormControl>
@@ -153,32 +154,17 @@ const Profile = () => {
             {/* Modal Button */}
             <ModalFooter>
               <Wrap>
-                {positions.map((position, i) => (
-                  <WrapItem key={i}>
-                    <Button colorScheme="blue" mr={3} onClick={() => saveEditedInfo(position)}>
-                      Save
-                    </Button>
-                  </WrapItem>
-                ))}
+                <WrapItem >
+                  <Button colorScheme="blue" mr={3} onClick={() => saveEditedInfo()}>
+                    Save
+                  </Button>
+                </WrapItem>
               </Wrap>
               <Button onClick={onClose}>Cancel</Button>
             </ModalFooter>
           </ModalContent>
         </Modal>
       </Container>
-      {/* 정보 수정 모달 */}
-      {/* // <Modal isOpen={editModalIsOpen} onRequestClose={closeEditModal} style={ModalStyle}>
-      //   <ModalContent>
-      //     <InputLabel>닉네임:</InputLabel>
-      //     <Input type="text" value={editedNickname} onChange={(e) => setEditedNickname(e.target.value)} />
-      //     <InputLabel>이메일:</InputLabel>
-      //     <Input type="text" value={editedEmail} onChange={(e) => setEditedEmail(e.target.value)} />
-      //     <ButtonGroup>
-      //       <Button onClick={saveEditedInfo}>저장</Button>
-      //       <Button onClick={closeEditModal}>닫기</Button>
-      //     </ButtonGroup>
-      //   </ModalContent>
-      // </Modal> */}
     </MainLayout>
   );
 };
@@ -197,19 +183,6 @@ const Header = styled.h1`
   font-size: 50px;
   font-weight: bold;
 `;
-// const Header = styled.div`
-//   box-sizing: border-box;
-//   display: flex;
-//   justify-content: space-between;
-//   align-items: center;
-//   padding: 10px 50px;
-//   background-color: #24deffe4;
-//   color: #494949;
-//   border-radius: 30px;
-// `;
-// const Logo = styled.h1`
-//   font-size: 1.6em;
-// `;
 
 const EditButton = styled.button`
   background-color: #fff;
@@ -231,9 +204,6 @@ const UserInfo = styled.div`
   font-size: 25px;
   display: flex;
   flex-direction: row;
-`;
-const Label = styled.div`
-  width: 300px;
 `;
 
 const UserInfoContainer = styled.div`

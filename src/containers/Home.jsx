@@ -40,7 +40,12 @@ const Home = () => {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   // 토스트 메시지 관련 toast 생성
-  const toast = useToast();
+  const toast = useToast({
+    position: "top",
+    isClosable: true,
+    status: 'success',
+    duration: 4000,
+  });
 
   useEffect(() => {
     // 서버에서 데이터를 가져와서 로컬 상태에 설정하는 비동기 함수
@@ -73,7 +78,7 @@ const Home = () => {
   };
 
   // 새 게시글 작성 및 저장하는 함수
-  const saveNewPost = async (position) => {
+  const saveNewPost = async () => {
     if (!localStorage.getItem('token')) {
       alert('로그인을 해야 글을 작성할 수 있습니다.');
       return;
@@ -94,22 +99,16 @@ const Home = () => {
       toast({
         title: '새로운 게시물 작성',
         description: '새 게시물이 성공적으로 작성되었습니다.',
-        position: position,
-        isClosable: true,
-        status: 'success',
-        duration: 4000,
+        
       });
     } else {
       alert('제목과 내용을 입력해주세요.');
     }
   };
 
-  // 게시글 작성완료 토스트 관련
-  const positions = ['top'];
   // const typeChangeHandler = (type) => setInputVal({ ...inputVal, type });
   const titleChangeHandler = (e) => setInputVal({ ...inputVal, title: e.target.value });
   const contentChangeHandler = (e) => setInputVal({ ...inputVal, content: e.target.value });
-  // ----------
 
   return (
     <MainLayout>
@@ -156,13 +155,11 @@ const Home = () => {
               {/* Modal Button */}
               <ModalFooter>
                 <Wrap>
-                  {positions.map((position, i) => (
-                    <WrapItem key={i}>
-                      <Button colorScheme="blue" mr={3} onClick={() => saveNewPost(position)}>
+                    <WrapItem>
+                      <Button colorScheme="blue" mr={3} onClick={() => saveNewPost()}>
                         Save
                       </Button>
                     </WrapItem>
-                  ))}
                 </Wrap>
                 <Button onClick={onClose}>Cancel</Button>
               </ModalFooter>
@@ -178,7 +175,6 @@ const Container = styled.div`
   width: 80vw;
   margin: 0 auto;
 `;
-
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
@@ -187,7 +183,6 @@ const Header = styled.div`
   color: #494949;
   border-radius: 30px;
 `;
-
 const Logo = styled.h1`
   font-size: 1.6em;
 `;
@@ -206,12 +201,10 @@ const NewPostButton = styled.button`
 `;
 const Content = styled.div`
   padding: 20px;
-
   & > img {
     margin: 0 auto;
   }
 `;
-
 const Posts = styled.div`
   display: flex;
   flex-direction: column;
