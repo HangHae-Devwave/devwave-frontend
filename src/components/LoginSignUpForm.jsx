@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
 import { SHA256 } from 'crypto-js';
 import { useAlert } from '../contexts/AlertProvider';
-import * as UserService from '../server/userService';
 import styled from 'styled-components';
 import Button from './button/Button';
 import Input from './input/Input';
@@ -12,6 +10,7 @@ import emailIcon from '../assets/email-icon.svg';
 import profileIcon from '../assets/profile-icon.svg';
 import lockIcon from '../assets/lock-icon.svg';
 import checkIcon from '../assets/check-icon.svg';
+import useAuth from '../hooks/useAuth';
 
 const LoginSignUpForm = ({ type }) => {
   const navigate = useNavigate();
@@ -53,7 +52,7 @@ const LoginSignUpForm = ({ type }) => {
     setIsValid({ ...isValid, isPasswordConfirmValid: inputVal.password === e.target.value ? true : false });
   };
 
-  const loginHandler = async () => {
+  const onClickLoginBtnHandler = async () => {
     if (inputVal.email === '') {
       setIsValid({ ...isValid, isEmailValid: false });
       return;
@@ -63,14 +62,9 @@ const LoginSignUpForm = ({ type }) => {
     }
 
     if (isValid.isEmailValid && isValid.isPasswordValid) {
-      await UserService.authenticateUser(inputVal.email, SHA256(inputVal.password).toString())
+      await useAuth
+        .loginHandler(inputVal.email, SHA256(inputVal.password).toString())
         .then((token) => {
-          const decoded = jwtDecode(token);
-          localStorage.setItem('token', token);
-          localStorage.setItem('id', decoded.id);
-          localStorage.setItem('email', decoded.email);
-          localStorage.setItem('nickname', decoded.nickname);
-          localStorage.setItem('profileImg', decoded.profileImg);
           showAlert('로그인 성공', 'success');
           navigate('/');
         })
@@ -85,7 +79,7 @@ const LoginSignUpForm = ({ type }) => {
     }
   };
 
-  const signupHandler = async () => {
+  const onClickSignupHandler = async () => {
     if (inputVal.email === '') {
       setIsValid({ ...isValid, isEmailValid: false });
       return;
@@ -101,7 +95,8 @@ const LoginSignUpForm = ({ type }) => {
     }
 
     if (isValid.isEmailValid && isValid.isNicknameValid && isValid.isPasswordValid && isValid.isPasswordConfirmValid) {
-      await UserService.createUser(inputVal.email, inputVal.nickname, SHA256(inputVal.password).toString())
+      await useAuth
+        .signupHandler(inputVal.email, inputVal.nickname, SHA256(inputVal.password).toString())
         .then((response) => {
           showAlert(response, 'success');
           navigate('/login');
@@ -159,7 +154,10 @@ const LoginSignUpForm = ({ type }) => {
           )}
         </InputContainer>
         <FooterBox>
-          <Button size="full" color="primary" onClick={type === 'login' ? loginHandler : signupHandler}>
+          <Button
+            size="full"
+            color="primary"
+            onClick={type === 'login' ? onClickLoginBtnHandler : onClickSignupHandler}>
             {type === 'login' ? '로그인' : '회원가입'}
           </Button>
           <ChangeBox>

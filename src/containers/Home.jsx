@@ -45,12 +45,6 @@ const Home = () => {
   useEffect(() => {
     // 서버에서 데이터를 가져와서 로컬 상태에 설정하는 비동기 함수
     const fetchPosts = async () => {
-      // localStorage에 저장된 posts 데이터가 있다면
-      // 서버 호출하지 않고 localStorage 데이터를 posts에 저장
-      // if (localStorage.getItem('posts').length) {
-      //   setPosts(JSON.parse(localStorage.getItem('posts')));
-      // } else {
-      // 서버에서 데이터를 가져오는 비동기 요청
       await postManager
         .getPostList()
         .then((response) => {
@@ -60,7 +54,6 @@ const Home = () => {
         .catch((error) => {
           console.error(error);
         });
-      // }
       setIsLoading(false);
     };
 
@@ -83,7 +76,7 @@ const Home = () => {
       const createdPost = await postManager.createPost(
         inputVal.title,
         inputVal.content,
-        localStorage.getItem('nickname')
+        JSON.parse(localStorage.getItem('user')).nickname
       );
       // 기존 게시물 목록에 새 게시글 추가 후 상태 업데이트
       setPosts((prevPosts) => [...prevPosts, createdPost]);
@@ -191,6 +184,7 @@ const Header = styled.div`
 const Logo = styled.h1`
   font-size: 1.6em;
 `;
+
 const NewPostButton = styled.button`
   background-color: #fff;
   color: #333;
@@ -198,6 +192,7 @@ const NewPostButton = styled.button`
   border: none;
   border-radius: 5px;
   cursor: pointer;
+
   &:hover {
     transition: 0.3s ease;
     background-color: #494949;

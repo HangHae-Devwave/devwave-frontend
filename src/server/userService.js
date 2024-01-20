@@ -11,8 +11,24 @@ const userList = [
   },
 ];
 
+const SECRET_KEY = 'your-secret-key';
+const refreshTokens = {};
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const generateAccessToken = (user) => {
+  return jwt({ id: user.id, email: user.email, nickname: user.nickname, profileImg: user.profileImg }, SECRET_KEY, {
+    expiresIn: '1h',
+  });
+};
+
+const generateRefreshToken = (user) => {
+  return jwt({ id: user.id }, SECRET_KEY, {
+    expiresIn: '1h',
+  });
+};
+
+// 로그인 엔드포인트
 // 이메일과 비밀번호로 사용자 인증을 수행하고 JWT 토큰을 반환
 const authenticateUser = async (email, password) => {
   const user = userList.find((u) => u.email === email);
@@ -30,14 +46,26 @@ const authenticateUser = async (email, password) => {
   }
 
   // 사용자 정보를 기반으로 JWT 토큰을 생성
-  const token = jwt(
-    { id: user.id, email: user.email, nickname: user.nickname, profileImg: user.profileImg },
-    'your-secret-key',
-    {
-      expiresIn: '1h',
+  const accessToken = generateAccessToken(user);
+  const refreshToken = generateRefreshToken(user);
+  refreshTokens[user.id] = refreshToken;
+
+  return { accessToken, refreshToken };
+};
+
+const refreshUser = (refreshToken) => {
+  if (!refreshToken || !refreshToken[refreshToken]) {
+    return 'Invalid refresh token';
+  }
+
+  jwt(refreshTokens[refreshToken], SECRET_KEY, (err, user) => {
+    if (err) {
+      return 'Invalid refresh token';
     }
-  );
-  return token;
+
+    const accessToken = generateAccessToken(user);
+    return accessToken;
+  });
 };
 
 const createUser = async (email, nickname, password) => {
@@ -89,9 +117,9 @@ const deleteUser = async (id) => {
   return userList;
 };
 
-export { authenticateUser, createUser, modifyUserInfo, modifyUserPassword, modifyUserImg, deleteUser };
+export { authenticateUser, refreshUser, createUser, modifyUserInfo, modifyUserPassword, modifyUserImg, deleteUser };
 
-// 로그인 테스트
+// // 로그인 테스트
 // const loginTest = async () => {
 //   try {
 //     const token = await authenticateUser(

@@ -22,10 +22,13 @@ import { modifyUserImg } from '../server/userService';
 // import PostManager from '../server/postService';
 import basicUserIcon from '../assets/basic-user-icon.svg';
 import ProfileImg from '../components/ProfileImg';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
+  const navigate = useNavigate();
   // 모달 관련
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const user = JSON.parse(localStorage.getItem('user'));
 
   // 토스트 관련
   const toast = useToast();
@@ -33,12 +36,12 @@ const Profile = () => {
 
   // 사용자 정보관련
   const [userInfo, setUserInfo] = useState({
-    nickname: localStorage.getItem('nickname'),
-    email: localStorage.getItem('email'),
+    nickname: user.nickname,
+    email: user.email,
   });
   const [editedNickname, setEditedNickname] = useState(userInfo.nickname);
   const [editedEmail, setEditedEmail] = useState(userInfo.email);
-  const [uploadImgUrl, setUploadImgUrl] = useState(localStorage.getItem('profileImg') || basicUserIcon);
+  const [uploadImgUrl, setUploadImgUrl] = useState(user.profileImg || basicUserIcon);
 
   // 정보 저장 함수 + 토스트 출력
   const saveEditedInfo = (position) => {
@@ -47,8 +50,8 @@ const Profile = () => {
     localStorage.setItem('email', editedEmail);
     // 수정된 값을 불러와 state 관리
     setUserInfo({
-      nickname: localStorage.getItem('nickname'),
-      email: localStorage.getItem('email'),
+      nickname: user.nickname,
+      email: user.email,
     });
     // 모달창 닫음
     onClose();
@@ -80,13 +83,15 @@ const Profile = () => {
   const modifyProfileImgHandler = () => {
     // const formData = new FormData();
     // formData.append('image', uploadImgUrl);
-    modifyUserImg(localStorage.getItem('id'), uploadImgUrl);
+    modifyUserImg(user.id, uploadImgUrl);
     localStorage.setItem('profileImg', uploadImgUrl);
   };
 
   // 로그아웃 처리
   const logoutHandler = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/');
     // setIsLoggedIn(false);
   };
 
@@ -231,9 +236,6 @@ const UserInfo = styled.div`
   font-size: 25px;
   display: flex;
   flex-direction: row;
-`;
-const Label = styled.div`
-  width: 300px;
 `;
 
 const UserInfoContainer = styled.div`

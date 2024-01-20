@@ -31,7 +31,7 @@ const NavBar = () => {
         <NavBox>
           {isLoggedIn ? (
             // 로그인 상태일 때, 프로필과 로그아웃 버튼 표시
-            <ProfileImg src={localStorage.getItem('profileImg')} onClick={profileClickHandler} />
+            <ProfileImg src={JSON.parse(localStorage.getItem('user')).profileImg} onClick={profileClickHandler} />
           ) : (
             // 로그인 상태가 아닐 때, 로그인과 회원가입 버튼 표시
             <>
