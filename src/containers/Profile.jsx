@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import {
   Modal,
@@ -19,9 +19,10 @@ import { useDisclosure } from '@chakra-ui/react-use-disclosure';
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react';
 import { MainLayout } from '../styles/GlobalStyles';
 import { modifyUserImg } from '../server/userService';
-// import PostManager from '../server/postService';
+import PostManager from '../server/postService';
 import basicUserIcon from '../assets/basic-user-icon.svg';
 import ProfileImg from '../components/ProfileImg';
+import PostItem from '../components/PostItem';
 
 const Profile = () => {
   // 모달 관련
@@ -63,8 +64,23 @@ const Profile = () => {
     });
   };
 
-  // post 데이터 관련
-  // const postManager = new PostManager();
+  // postList 데이터 관련
+  const postManager = new PostManager();
+  const [postList, setPostList] = useState([]);
+
+  useEffect(()=>{
+    const fetchMyPosts = async () => {
+      await postManager.getPostList()
+        .then((response) => {
+          console.log(response);
+          setPostList(response);
+        })
+        .catch((error) => {
+          console.log(`error: ${error}`);
+        });
+    }
+    fetchMyPosts();
+  }, [])
 
   // 프로필 이미지 업로드 로직
   const imageUploadHandler = (e) => {
@@ -107,7 +123,7 @@ const Profile = () => {
               <UserInfoContainer>
                 <ProfileBox>
                   <ProfileImg src={uploadImgUrl} size="100px" />
-                  <input type="file" accept="image/*" onChange={imageUploadHandler} />
+                  <input type="file" accept="image/*" onChange={imageUploadHandler}/>
                   <button onClick={modifyProfileImgHandler}>저장</button>
                 </ProfileBox>
                 <InfoBox>
@@ -120,7 +136,17 @@ const Profile = () => {
             </TabPanel>
 
             {/* Your Post */}
-            <TabPanel></TabPanel>
+            <TabPanel>
+              <Posts>
+                {postList
+                  .filter((myPosts) => myPosts.author === localStorage.getItem('nickname'))
+                  .map((myPosts) => (
+                    <div key={myPosts.id}>
+                      <PostItem key={myPosts.id} post={myPosts}></PostItem>
+                    </div>
+                  ))}
+              </Posts>
+            </TabPanel>
           </TabPanels>
         </Tabs>
 
@@ -130,7 +156,7 @@ const Profile = () => {
           <ModalContent>
             <ModalHeader>Edit your profile</ModalHeader>
             <ModalCloseButton />
-            
+
             <ModalBody>
               {/* Modal Input */}
               <FormControl>
@@ -177,6 +203,13 @@ const Container = styled.div`
 
 const HR = styled.hr`
   margin: 30px 0px;
+`;
+
+const Posts = styled.div`
+  display: flex;
+  flex-direction: column;
+  font-size: 25px;
+  gap: 30px;
 `;
 
 const Header = styled.h1`

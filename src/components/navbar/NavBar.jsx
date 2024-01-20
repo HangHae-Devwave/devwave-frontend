@@ -59,7 +59,7 @@ const NavbarContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* z-index: 1; */
+  z-index: 1; 
 `;
 
 const Navbar = styled.div`
@@ -73,6 +73,7 @@ const Navbar = styled.div`
 
   & > img {
     width: 10vw;
+    cursor: pointer;
   }
 `;
 

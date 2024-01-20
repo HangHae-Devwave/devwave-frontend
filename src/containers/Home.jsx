@@ -22,7 +22,6 @@ import { Wrap, WrapItem } from '@chakra-ui/react';
 // chakra toast
 import { useToast } from '@chakra-ui/react';
 import PostItem from '../components/PostItem';
-// import Button from '../components/button/Button';
 import Loading from '../components/Loading';
 
 const Home = () => {
@@ -43,7 +42,6 @@ const Home = () => {
   const toast = useToast({
     position: "top",
     isClosable: true,
-    status: 'success',
     duration: 4000,
   });
 
@@ -80,7 +78,11 @@ const Home = () => {
   // 새 게시글 작성 및 저장하는 함수
   const saveNewPost = async () => {
     if (!localStorage.getItem('token')) {
-      alert('로그인을 해야 글을 작성할 수 있습니다.');
+      toast({
+        title: '작성 오류',
+        status: 'error',
+        description: '로그인을 하셔야 새 게시글 작성이 가능합니다.',
+      });
       return;
     }
     // --- 민지 ---
@@ -97,12 +99,16 @@ const Home = () => {
       setInputVal({ type: 'board', title: '', content: '' });
       // 성공적인 게시물 작성 토스트 메시지 표시
       toast({
-        title: '새로운 게시물 작성',
+        title: '작성 성공',
+        status: 'success',
         description: '새 게시물이 성공적으로 작성되었습니다.',
-        
       });
     } else {
-      alert('제목과 내용을 입력해주세요.');
+      toast({
+        title: '작성 오류',
+        status: 'error',
+        description: '제목과 내용 모두 입력해주세요.',
+      });
     }
   };
 

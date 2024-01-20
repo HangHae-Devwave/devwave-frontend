@@ -116,6 +116,18 @@ class PostManager {
     this.posts.push(post);
     return post;
   }
+  
+  // Detail에 댓글데이터 추가하기
+  async createReply(postId, replyAuthor, replyContent){
+    await this.sleep(1000);
+    const targetPost = this.posts.find((post) => post.id === postId);
+    console.log(targetPost);
+    const uniqueId = uuidv4();
+    const replyId = `reply_${uniqueId}`;
+    const replyData = {replyId, replyAuthor, replyContent};
+    targetPost.comment.push(replyData);
+    return replyData
+  }
 
   // Detail에 특정 게시물 수정하기
   async updatePost(id, title, content) {
