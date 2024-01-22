@@ -21,6 +21,9 @@ import {
 import { Wrap, WrapItem } from '@chakra-ui/react';
 // chakra toast
 import { useToast } from '@chakra-ui/react';
+// chakra radio
+import { Radio, RadioGroup } from '@chakra-ui/react'
+import { Stack } from '@chakra-ui/react'
 import PostItem from '../components/PostItem';
 import Loading from '../components/Loading';
 
@@ -34,7 +37,7 @@ const Home = () => {
   // 게시물 CRUD관련 클래스 객체 생성
   const postManager = new PostManager();
   // 게시물 작성시 사용되는 state
-  const [inputVal, setInputVal] = useState({ type: 'board', title: '', content: '' });
+  const [inputVal, setInputVal] = useState({ type: '', title: '', content: '' });
   // 게시물 데이터 상태관리
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,14 +48,16 @@ const Home = () => {
     duration: 4000,
   });
 
+  // 민지님이 캐시 만드려고 시도한 코드
+  // 초기 데이터를 가져오는 방식
   useEffect(() => {
     // 서버에서 데이터를 가져와서 로컬 상태에 설정하는 비동기 함수
     const fetchPosts = async () => {
       // localStorage에 저장된 posts 데이터가 있다면
       // 서버 호출하지 않고 localStorage 데이터를 posts에 저장
-      // if (localStorage.getItem('posts').length) {
-      //   setPosts(JSON.parse(localStorage.getItem('posts')));
-      // } else {
+      if (!!localStorage.getItem('posts')) {
+        setPosts(JSON.parse(localStorage.getItem('posts')));
+      } else {
       // 서버에서 데이터를 가져오는 비동기 요청
       await postManager
         .getPostList()
@@ -63,11 +68,9 @@ const Home = () => {
         .catch((error) => {
           console.error(error);
         });
-      // }
+      }
       setIsLoading(false);
     };
-
-    // 컴포넌트가 마운트될 때 한 번 데이터를 가져오도록 호출
     fetchPosts();
   }, []); // 빈 배열은 컴포넌트가 마운트될 때만 실행되도록 보장
 
@@ -88,15 +91,19 @@ const Home = () => {
     // --- 민지 ---
     if (!!inputVal.title && !!inputVal.content) {
       const createdPost = await postManager.createPost(
+        inputVal.type,
         inputVal.title,
         inputVal.content,
         localStorage.getItem('nickname')
       );
       // 기존 게시물 목록에 새 게시글 추가 후 상태 업데이트
       setPosts((prevPosts) => [...prevPosts, createdPost]);
+      const localStoragePosts = JSON.parse(localStorage.getItem('posts')) || [];
+      const newLocalStoragePosts = [...localStoragePosts, createdPost];
+      localStorage.setItem('posts', JSON.stringify(newLocalStoragePosts));
       // 모달 닫기 및 입력 폼 초기화
       onClose();
-      setInputVal({ type: 'board', title: '', content: '' });
+      setInputVal({ type: '', title: '', content: '' });
       // 성공적인 게시물 작성 토스트 메시지 표시
       toast({
         title: '작성 성공',
@@ -112,7 +119,7 @@ const Home = () => {
     }
   };
 
-  // const typeChangeHandler = (type) => setInputVal({ ...inputVal, type });
+  const typeChangeHandler = (type) => setInputVal({ ...inputVal, type: type });
   const titleChangeHandler = (e) => setInputVal({ ...inputVal, title: e.target.value });
   const contentChangeHandler = (e) => setInputVal({ ...inputVal, content: e.target.value });
 
@@ -121,8 +128,17 @@ const Home = () => {
       <Container>
         <Header>
           <Logo>새로운 게시글을 작성해보세요!</Logo>
-          <NewPostButton onClick={onOpen}>New Post</NewPostButton>
+          <Button 
+            backgroundColor={"skyblue"} 
+            color={"white"} 
+            onClick={onOpen}>
+              New Post
+          </Button>
         </Header>
+
+        <TypeSection>
+          타입선택영역 구현예정
+        </TypeSection>
 
         <Content>
           {/* 게시물 목록 */}
@@ -130,7 +146,11 @@ const Home = () => {
           {!isLoading && (
             <Posts>
               {posts.map((post) => (
-                <PostItem key={post.id} onClick={() => handlePostClick(post)} post={post}></PostItem>
+                <PostItem 
+                  key={post.id} 
+                  onClick={() => handlePostClick(post)} 
+                  post={post}>
+                </PostItem>
               ))}
             </Posts>
           )}
@@ -145,7 +165,19 @@ const Home = () => {
                 {/* Modal Input */}
                 <FormControl>
                   <FormLabel>Title</FormLabel>
-                  <Input value={inputVal.title} onChange={titleChangeHandler} placeholder="Enter New Title" />
+                  <Input 
+                    value={inputVal.title} 
+                    onChange={titleChangeHandler} 
+                    placeholder="Enter New Title" />
+                </FormControl>
+                <FormControl mt={4}>
+                  <FormLabel>Type</FormLabel>
+                  <RadioGroup value={inputVal.type} onChange={(e)=>typeChangeHandler(e)}>
+                    <Stack direction='row'>
+                      <Radio value='board' checked ml={20}>Board</Radio>
+                      <Radio value='question' ml={7}>Question</Radio>
+                    </Stack>
+                  </RadioGroup>
                 </FormControl>
                 <FormControl mt={4}>
                   <FormLabel>Content</FormLabel>
@@ -192,19 +224,9 @@ const Header = styled.div`
 const Logo = styled.h1`
   font-size: 1.6em;
 `;
-const NewPostButton = styled.button`
-  background-color: #fff;
-  color: #333;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  &:hover {
-    transition: 0.3s ease;
-    background-color: #494949;
-    color: #24deffe4;
-  }
-`;
+const TypeSection = styled.div`
+  
+`
 const Content = styled.div`
   padding: 20px;
   & > img {

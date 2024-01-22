@@ -112,7 +112,7 @@ class PostManager {
     const id = uniqueId;
     const date = this.dateFormat(new Date());
     const comment = [{}];
-    const post = { type, id, title, content, author, date, comment };
+    const post = { id, type, title, content, author, date, comment };
     this.posts.push(post);
     return post;
   }
@@ -121,7 +121,7 @@ class PostManager {
   async createReply(postId, replyAuthor, replyContent){
     await this.sleep(1000);
     const targetPost = this.posts.find((post) => post.id === postId);
-    console.log(targetPost);
+    // console.log(targetPost);
     const uniqueId = uuidv4();
     const replyId = `reply_${uniqueId}`;
     const replyData = {replyId, replyAuthor, replyContent};

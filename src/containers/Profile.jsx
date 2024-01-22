@@ -23,6 +23,7 @@ import PostManager from '../server/postService';
 import basicUserIcon from '../assets/basic-user-icon.svg';
 import ProfileImg from '../components/ProfileImg';
 import PostItem from '../components/PostItem';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   // 모달 관련
@@ -81,6 +82,11 @@ const Profile = () => {
     }
     fetchMyPosts();
   }, [])
+
+  const navigate = useNavigate();
+  const handlePostClick = (post) => {
+    navigate(`/${post.id}`, { state: { post } });
+  };
 
   // 프로필 이미지 업로드 로직
   const imageUploadHandler = (e) => {
@@ -142,7 +148,11 @@ const Profile = () => {
                   .filter((myPosts) => myPosts.author === localStorage.getItem('nickname'))
                   .map((myPosts) => (
                     <div key={myPosts.id}>
-                      <PostItem key={myPosts.id} post={myPosts}></PostItem>
+                      <PostItem 
+                        key={myPosts.id} 
+                        onClick={() => handlePostClick(myPosts)}
+                        post={myPosts}>
+                      </PostItem>
                     </div>
                   ))}
               </Posts>

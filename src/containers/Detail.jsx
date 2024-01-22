@@ -6,6 +6,7 @@ import { Input } from '@chakra-ui/react'
 import { Button, ButtonGroup } from '@chakra-ui/react'
 import PostManager from '../server/postService';
 import { useToast } from '@chakra-ui/react';
+// import { useDisclosure } from '@chakra-ui/react-use-disclosure';
 
 const Detail = () => {
   // Home.jsx에서 데이터 가져옴
@@ -14,8 +15,7 @@ const Detail = () => {
   const postTitle = location.post.title;
   const postAuthor = location.post.author;
   const postContent = location.post.content;
-  // const postComments = location.post.comment || [];
-  const [postComments, setPostComments] = useState(location.post.comment || []);
+  const [postComments, setPostComments] = useState(location.post.comment || [{}]);
 
   // 이전 페이지로 돌아가기 기능을 위한 navigate
   const navigate = useNavigate();
@@ -53,6 +53,10 @@ const Detail = () => {
       );
       // 기존 게시물 목록에 새 게시글 추가 후 상태 업데이트
       setPostComments((postComments) => [...postComments , createdReply]);
+      const localStorageReply = postComments
+      console.log(localStorageReply);
+      // const newLocalStoragePosts = [...localStoragePosts, createdPost];
+      // localStorage.setItem('posts', JSON.stringify(newLocalStoragePosts));
       setNewReply('');
       toast({
         title: '작성 성공',
@@ -68,9 +72,17 @@ const Detail = () => {
     }
   };
 
+  // const { isOpen, onOpen, onClose } = useDisclosure();
+
+  // // 게시글 삭제 버튼
+  // const editButtonHandler = () => {
+    
+  // }
+  // const deleteButtonHandler = () => {
+
+  // }
 
 
-  
 
   return (
     <MainLayout>
