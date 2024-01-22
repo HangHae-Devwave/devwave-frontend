@@ -10,7 +10,7 @@ import emailIcon from '../assets/email-icon.svg';
 import profileIcon from '../assets/profile-icon.svg';
 import lockIcon from '../assets/lock-icon.svg';
 import checkIcon from '../assets/check-icon.svg';
-import useAuth from '../hooks/useAuth';
+import { authenticateUser, createUser } from '../server/userService';
 
 const LoginSignUpForm = ({ type }) => {
   const navigate = useNavigate();
@@ -52,7 +52,7 @@ const LoginSignUpForm = ({ type }) => {
     setIsValid({ ...isValid, isPasswordConfirmValid: inputVal.password === e.target.value ? true : false });
   };
 
-  const onClickLoginBtnHandler = async () => {
+  const loginHandler = async () => {
     if (inputVal.email === '') {
       setIsValid({ ...isValid, isEmailValid: false });
       return;
@@ -62,8 +62,7 @@ const LoginSignUpForm = ({ type }) => {
     }
 
     if (isValid.isEmailValid && isValid.isPasswordValid) {
-      await useAuth
-        .loginHandler(inputVal.email, SHA256(inputVal.password).toString())
+      await authenticateUser(inputVal.email, SHA256(inputVal.password).toString())
         .then((token) => {
           showAlert('로그인 성공', 'success');
           navigate('/');
@@ -79,7 +78,7 @@ const LoginSignUpForm = ({ type }) => {
     }
   };
 
-  const onClickSignupHandler = async () => {
+  const signupHandler = async () => {
     if (inputVal.email === '') {
       setIsValid({ ...isValid, isEmailValid: false });
       return;
@@ -95,8 +94,7 @@ const LoginSignUpForm = ({ type }) => {
     }
 
     if (isValid.isEmailValid && isValid.isNicknameValid && isValid.isPasswordValid && isValid.isPasswordConfirmValid) {
-      await useAuth
-        .signupHandler(inputVal.email, inputVal.nickname, SHA256(inputVal.password).toString())
+      await createUser(inputVal.email, inputVal.nickname, SHA256(inputVal.password).toString())
         .then((response) => {
           showAlert(response, 'success');
           navigate('/login');
@@ -154,10 +152,7 @@ const LoginSignUpForm = ({ type }) => {
           )}
         </InputContainer>
         <FooterBox>
-          <Button
-            size="full"
-            color="primary"
-            onClick={type === 'login' ? onClickLoginBtnHandler : onClickSignupHandler}>
+          <Button size="full" color="primary" onClick={type === 'login' ? loginHandler : signupHandler}>
             {type === 'login' ? '로그인' : '회원가입'}
           </Button>
           <ChangeBox>

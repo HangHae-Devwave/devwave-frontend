@@ -1,6 +1,8 @@
 const { v4: uuidv4 } = require('uuid');
 const jwt = require('jwt-encode');
+const jwtDecode = require('jwt-decode');
 
+// --- 가짜 DB 데이터 ---
 const userList = [
   {
     id: '1',
@@ -16,29 +18,69 @@ const refreshTokens = {};
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// accessToken 발급 함수
 const generateAccessToken = (user) => {
-  return jwt({ id: user.id, email: user.email, nickname: user.nickname, profileImg: user.profileImg }, SECRET_KEY, {
-    expiresIn: '1h',
-  });
+  const token = jwt(
+    { id: user.id, email: user.email, nickname: user.nickname, profileImg: user.profileImg },
+    SECRET_KEY,
+    {
+      expiresIn: '1h',
+    }
+  );
+  return token;
 };
 
-const generateRefreshToken = (user) => {
-  return jwt({ id: user.id }, SECRET_KEY, {
+// refreshToken 발급 함수
+const generateRefreshToken = (id) => {
+  const refreshToken = jwt({ id }, SECRET_KEY, {
     expiresIn: '1h',
   });
+  return refreshToken;
 };
 
-// 로그인 엔드포인트
-// 이메일과 비밀번호로 사용자 인증을 수행하고 JWT 토큰을 반환
+// refresh token 유효성 검사
+const verifyRefreshToken = async (token, id) => {
+  // 받은 refreshToken이 저장돼 있는 값과 일치하는지 확인
+  try {
+    if (refreshTokens[id] === token) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (e) {
+    console.log(e);
+    return false;
+  }
+};
+
+const verifyAccessToken = (token) => {
+  try {
+    const decoded = jwtDecode(token);
+    return {
+      ok: true,
+      id: decoded.id,
+    };
+  } catch (e) {
+    return {
+      ok: false,
+      message: e.message,
+    };
+  }
+};
+
+// --- controller ---
+// 로그인: 이메일과 비밀번호로 사용자 인증을 수행하고 JWT 토큰을 반환
 const authenticateUser = async (email, password) => {
   const user = userList.find((u) => u.email === email);
 
+  // 이메일 불일치
   if (!user) {
     const error = new Error('존재하지 않는 계정입니다.');
     error.name = 'UserNotFoundError';
     throw error;
   }
 
+  // 비밀번호 불일치
   if (user.password !== password) {
     const error = new Error('비밀번호가 틀렸습니다.');
     error.name = 'IncorrectPasswordError';
@@ -46,28 +88,32 @@ const authenticateUser = async (email, password) => {
   }
 
   // 사용자 정보를 기반으로 JWT 토큰을 생성
+  const id = user.id;
   const accessToken = generateAccessToken(user);
-  const refreshToken = generateRefreshToken(user);
-  refreshTokens[user.id] = refreshToken;
+  const refreshToken = generateRefreshToken(id);
 
-  return { accessToken, refreshToken };
+  // refreshToken 데이터 저장
+  refreshTokens[id] = refreshToken;
+
+  return { id, accessToken, refreshToken };
 };
 
-const refreshUser = (refreshToken) => {
-  if (!refreshToken || !refreshToken[refreshToken]) {
-    return 'Invalid refresh token';
-  }
+// const refreshUser = (refreshToken) => {
+//   if (!refreshToken || !refreshToken[refreshToken]) {
+//     return 'Invalid refresh token';
+//   }
 
-  jwt(refreshTokens[refreshToken], SECRET_KEY, (err, user) => {
-    if (err) {
-      return 'Invalid refresh token';
-    }
+//   jwt(refreshTokens[refreshToken], SECRET_KEY, (err, user) => {
+//     if (err) {
+//       return 'Invalid refresh token';
+//     }
 
-    const accessToken = generateAccessToken(user);
-    return accessToken;
-  });
-};
+//     const accessToken = generateAccessToken(user);
+//     return accessToken;
+//   });
+// };
 
+// 회원가입
 const createUser = async (email, nickname, password) => {
   // 이메일 중복 확인
   const emailExists = userList.some((user) => user.email === email);
@@ -88,6 +134,7 @@ const createUser = async (email, nickname, password) => {
   return '회원가입 성공';
 };
 
+// 유저 정보(이메일 / 닉네임) 변경
 const modifyUserInfo = async (id, email, nickname) => {
   await sleep(1000);
   const user = userList.find((user) => user.id === id);
@@ -96,6 +143,7 @@ const modifyUserInfo = async (id, email, nickname) => {
   return user;
 };
 
+// 비밀번호 변경
 const modifyUserPassword = async (id, password) => {
   await sleep(1000);
   const user = userList.find((user) => user.id === id);
@@ -103,6 +151,7 @@ const modifyUserPassword = async (id, password) => {
   return;
 };
 
+// 프로필 이미지 변경
 const modifyUserImg = async (id, profileImg) => {
   await sleep(1000);
   const user = userList.find((user) => user.id === id);
@@ -110,6 +159,7 @@ const modifyUserImg = async (id, profileImg) => {
   return user;
 };
 
+// 유저 삭제
 const deleteUser = async (id) => {
   await sleep(1000);
   const index = userList.findIndex((user) => user.id === id);
@@ -117,7 +167,16 @@ const deleteUser = async (id) => {
   return userList;
 };
 
-export { authenticateUser, refreshUser, createUser, modifyUserInfo, modifyUserPassword, modifyUserImg, deleteUser };
+export {
+  verifyRefreshToken,
+  verifyAccessToken,
+  authenticateUser,
+  createUser,
+  modifyUserInfo,
+  modifyUserPassword,
+  modifyUserImg,
+  deleteUser,
+};
 
 // // 로그인 테스트
 // const loginTest = async () => {
