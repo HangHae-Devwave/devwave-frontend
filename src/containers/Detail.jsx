@@ -37,6 +37,7 @@ const Detail = () => {
   const replyChangeHandler = (e) => setNewReply(e.target.value)
 
   const saveNewReply = async () => {
+    // 로그인한 사용자만 댓글 달 수 있도록 설정
     if (!localStorage.getItem('token')) {
       toast({
         title: '작성 오류',
@@ -51,12 +52,25 @@ const Detail = () => {
         newReply,
         localStorage.getItem('nickname'),
       );
-      // 기존 게시물 목록에 새 게시글 추가 후 상태 업데이트
-      setPostComments((postComments) => [...postComments , createdReply]);
-      const localStorageReply = postComments
-      console.log(localStorageReply);
-      // const newLocalStoragePosts = [...localStoragePosts, createdPost];
-      // localStorage.setItem('posts', JSON.stringify(newLocalStoragePosts));
+      // 기존 댓글 목록에 새 댓글 추가 후 상태 업데이트
+      setPostComments((postComments) => [...postComments, createdReply]);
+
+      // localStorage에서 기존 데이터 가져오기
+      const storedPosts = localStorage.getItem('posts');
+      let posts = storedPosts ? JSON.parse(storedPosts) : [];
+
+      // 기존 데이터에 새 댓글 추가
+      posts = posts.map((post) => {
+        if (post.id === postId) {
+          // 해당 게시물의 comment 내부에 새로운 댓글 추가
+          post.comment = post.comment ? [...post.comment, createdReply] : [createdReply];
+          console.log(post.comment);
+        }
+        return post;
+      });
+
+      // 업데이트된 데이터를 다시 localStorage에 저장
+      localStorage.setItem('posts', JSON.stringify(posts));
       setNewReply('');
       toast({
         title: '작성 성공',
@@ -81,8 +95,6 @@ const Detail = () => {
   // const deleteButtonHandler = () => {
 
   // }
-
-
 
   return (
     <MainLayout>
