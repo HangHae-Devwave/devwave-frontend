@@ -1,6 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
 const jwt = require('jwt-encode');
-const jwtDecode = require('jwt-decode');
 
 // --- 가짜 DB 데이터 ---
 const userList = [
@@ -38,8 +37,8 @@ const generateRefreshToken = (id) => {
   return refreshToken;
 };
 
-// refresh token 유효성 검사
-const verifyRefreshToken = async (token, id) => {
+// refreshToken 유효성 검사
+const verifyRefreshToken = (token, id) => {
   // 받은 refreshToken이 저장돼 있는 값과 일치하는지 확인
   try {
     if (refreshTokens[id] === token) {
@@ -48,25 +47,25 @@ const verifyRefreshToken = async (token, id) => {
       return false;
     }
   } catch (e) {
-    console.log(e);
     return false;
   }
 };
 
-const verifyAccessToken = (token) => {
-  try {
-    const decoded = jwtDecode(token);
-    return {
-      ok: true,
-      id: decoded.id,
-    };
-  } catch (e) {
-    return {
-      ok: false,
-      message: e.message,
-    };
-  }
-};
+// accessToken 유효성 검사
+// const verifyAccessToken = (token) => {
+//   try {
+//     const decoded = token;
+//     return {
+//       ok: true,
+//       id: decoded,
+//     };
+//   } catch (e) {
+//     return {
+//       ok: false,
+//       message: 'jwt expired',
+//     };
+//   }
+// };
 
 // --- controller ---
 // 로그인: 이메일과 비밀번호로 사용자 인증을 수행하고 JWT 토큰을 반환
@@ -88,30 +87,56 @@ const authenticateUser = async (email, password) => {
   }
 
   // 사용자 정보를 기반으로 JWT 토큰을 생성
-  const id = user.id;
+  const userId = user.id;
   const accessToken = generateAccessToken(user);
-  const refreshToken = generateRefreshToken(id);
+  const refreshToken = generateRefreshToken(userId);
 
   // refreshToken 데이터 저장
-  refreshTokens[id] = refreshToken;
+  refreshTokens[userId] = refreshToken;
 
-  return { id, accessToken, refreshToken };
+  return { userId, accessToken, refreshToken };
 };
 
-// const refreshUser = (refreshToken) => {
-//   if (!refreshToken || !refreshToken[refreshToken]) {
-//     return 'Invalid refresh token';
-//   }
+const refresh = async (userId, accessToken, refreshToken) => {
+  // access, refresh 토큰이 헤더에 담겨 온 경우
+  if (accessToken && refreshToken) {
+    // access token 검증 -> expired여야 함.
+    // const authResult = verifyAccessToken(accessToken);
 
-//   jwt(refreshTokens[refreshToken], SECRET_KEY, (err, user) => {
-//     if (err) {
-//       return 'Invalid refresh token';
-//     }
+    // access token 디코딩하여 userId를 가져온다.
+    // const decoded = authResult.id;
 
-//     const accessToken = generateAccessToken(user);
-//     return accessToken;
-//   });
-// };
+    // 디코딩 결과가 없으면 권한이 없음을 응답.
+    // if (!decoded) {
+    //   throw new Error(failResponse(401, '권한이 없습니다!'));
+    // }
+
+    // access 토큰 만료 시
+    // if (authResult.ok === false && authResult.message === 'jwt expired') {
+    // 1. access token이 만료되고, refresh token도 만료 된 경우 => 새로 로그인해야합니다.
+    const refreshResult = await verifyRefreshToken(refreshToken, userId);
+    if (refreshResult === false) {
+      throw new Error('No authorized! 다시 로그인해주세요.');
+    } else {
+      // 2. access token이 만료되고, refresh token은 만료되지 않은 경우 => 새로운 access token을 발급
+      const newAccessToken = generateAccessToken({ id: userId });
+
+      return {
+        accessToken: newAccessToken,
+        refreshToken,
+      };
+    }
+    // } else {
+    //   // 3. access token이 만료되지 않은경우 => refresh 할 필요가 없습니다.
+    //   const error = new Error('Access token is not expired!');
+    //   error.type = 400;
+    //   throw error;
+    // }
+  } else {
+    // access token 또는 refresh token이 헤더에 없는 경우
+    throw new Error('Access token and refresh token are need for refresh!');
+  }
+};
 
 // 회원가입
 const createUser = async (email, nickname, password) => {
@@ -167,18 +192,9 @@ const deleteUser = async (id) => {
   return userList;
 };
 
-export {
-  verifyRefreshToken,
-  verifyAccessToken,
-  authenticateUser,
-  createUser,
-  modifyUserInfo,
-  modifyUserPassword,
-  modifyUserImg,
-  deleteUser,
-};
+export { authenticateUser, refresh, createUser, modifyUserInfo, modifyUserPassword, modifyUserImg, deleteUser };
 
-// // 로그인 테스트
+// 로그인 테스트
 // const loginTest = async () => {
 //   try {
 //     const token = await authenticateUser(
@@ -200,3 +216,21 @@ export {
 // // 로그인 및 회원가입 테스트 수행
 // loginTest();
 // signupTest();
+
+// const refreshTest = async () => {
+//   try {
+//     const value = {
+//       userId: '1',
+//       accessToken:
+//         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImV4cGlyZXNJbiI6IjFoIn0.eyJpZCI6IjEiLCJlbWFpbCI6Im1pbmkwMDA2QG5hdmVyLmNvbSIsIm5pY2tuYW1lIjoi6rO966-87KeAIiwicHJvZmlsZUltZyI6IiJ9.9xQHgVFSuLf8FB7BtRChsfHqGCrmKOQtW3cXyAj20z0',
+//       refreshToken:
+//         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImV4cGlyZXNJbiI6IjFoIn0.eyJpZCI6IjEifQ.FmtXsJ8P08XxZhf8W2qClUiQ4nyBprGPpukWKdKi_HI',
+//     };
+//     console.log('refreshTokens: ', refreshTokens);
+//     const res = await refresh('1', value.accessToken, value.refreshToken);
+//     console.log(res);
+//   } catch (e) {
+//     console.error('refreshTest: ', e);
+//   }
+// };
+// refreshTest();

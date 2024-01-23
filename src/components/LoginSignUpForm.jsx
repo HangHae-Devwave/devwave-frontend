@@ -10,7 +10,7 @@ import emailIcon from '../assets/email-icon.svg';
 import profileIcon from '../assets/profile-icon.svg';
 import lockIcon from '../assets/lock-icon.svg';
 import checkIcon from '../assets/check-icon.svg';
-import { authenticateUser, createUser } from '../server/userService';
+import { authenticateUser, createUser, refresh } from '../server/userService';
 
 const LoginSignUpForm = ({ type }) => {
   const navigate = useNavigate();
@@ -52,6 +52,39 @@ const LoginSignUpForm = ({ type }) => {
     setIsValid({ ...isValid, isPasswordConfirmValid: inputVal.password === e.target.value ? true : false });
   };
 
+  const getTokenFromLocal = async () => {
+    try {
+      const value = await localStorage.getItem('tokens');
+      if (value !== null) {
+        return JSON.parse(value);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      console.log(e.message);
+    }
+  };
+
+  const verifyTokens = async () => {
+    const token = await getTokenFromLocal();
+
+    try {
+      const res = await refresh(token.accessToken, token.refreshToken);
+
+      // accessToken 만료, refreshToken 정상 -> 재발급된 accessToken 저장 후 자동 로그인
+      localStorage.setItem(
+        'tokens',
+        JSON.stringify({
+          ...token,
+          accessToken: res.data.accessToken,
+        })
+      );
+    } catch (e) {
+      // const code = e.code;
+      console.log('error: ', e);
+    }
+  };
+
   const loginHandler = async () => {
     if (inputVal.email === '') {
       setIsValid({ ...isValid, isEmailValid: false });
@@ -63,7 +96,15 @@ const LoginSignUpForm = ({ type }) => {
 
     if (isValid.isEmailValid && isValid.isPasswordValid) {
       await authenticateUser(inputVal.email, SHA256(inputVal.password).toString())
-        .then((token) => {
+        .then(({ userId, accessToken, refreshToken }) => {
+          localStorage.setItem(
+            'tokens',
+            JSON.stringify({
+              userId: userId,
+              accessToken: accessToken,
+              refreshToken: refreshToken,
+            })
+          );
           showAlert('로그인 성공', 'success');
           navigate('/');
         })
