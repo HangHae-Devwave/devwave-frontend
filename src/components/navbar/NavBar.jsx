@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import logo from '../../assets/devwave-logo.png';
 import ProfileImg from '../ProfileImg';
+import { useQueryClient } from 'react-query';
 
 const NavBar = () => {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('tokens');
 
   useEffect(() => {
     // localStorage에서 토큰을 가져와서 로그인 상태 확인
@@ -23,6 +25,7 @@ const NavBar = () => {
   const profileClickHandler = () => {
     navigate('/profile');
   };
+  console.log(queryClient.getQueryData('user'));
 
   return (
     <NavbarContainer>
@@ -31,7 +34,7 @@ const NavBar = () => {
         <NavBox>
           {isLoggedIn ? (
             // 로그인 상태일 때, 프로필과 로그아웃 버튼 표시
-            <ProfileImg src={JSON.parse(localStorage.getItem('user')).profileImg} onClick={profileClickHandler} />
+            <ProfileImg src={queryClient.getQueryData('user').profileImg} onClick={profileClickHandler} />
           ) : (
             // 로그인 상태가 아닐 때, 로그인과 회원가입 버튼 표시
             <>
@@ -59,7 +62,7 @@ const NavbarContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  /* z-index: 1; */
+  z-index: 999;
 `;
 
 const Navbar = styled.div`

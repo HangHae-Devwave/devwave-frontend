@@ -159,6 +159,12 @@ const createUser = async (email, nickname, password) => {
   return '회원가입 성공';
 };
 
+const getUser = async (id) => {
+  await sleep(100);
+  const user = userList.find((user) => user.id === id);
+  return user;
+};
+
 // 유저 정보(이메일 / 닉네임) 변경
 const modifyUserInfo = async (id, email, nickname) => {
   await sleep(1000);
@@ -192,7 +198,16 @@ const deleteUser = async (id) => {
   return userList;
 };
 
-export { authenticateUser, refresh, createUser, modifyUserInfo, modifyUserPassword, modifyUserImg, deleteUser };
+export {
+  authenticateUser,
+  refresh,
+  createUser,
+  getUser,
+  modifyUserInfo,
+  modifyUserPassword,
+  modifyUserImg,
+  deleteUser,
+};
 
 // 로그인 테스트
 // const loginTest = async () => {

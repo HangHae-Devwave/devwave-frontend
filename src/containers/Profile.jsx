@@ -23,12 +23,17 @@ import { modifyUserImg } from '../server/userService';
 import basicUserIcon from '../assets/basic-user-icon.svg';
 import ProfileImg from '../components/ProfileImg';
 import { useNavigate } from 'react-router-dom';
+import useUser from '../hooks/useUser';
+import { useQueryClient } from 'react-query';
 
 const Profile = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const user = queryClient.getQueryData('user');
+  const [updateUser, clearUser] = useUser();
+
   // 모달 관련
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const user = JSON.parse(localStorage.getItem('user'));
 
   // 토스트 관련
   const toast = useToast();
@@ -39,19 +44,17 @@ const Profile = () => {
     nickname: user.nickname,
     email: user.email,
   });
-  const [editedNickname, setEditedNickname] = useState(userInfo.nickname);
-  const [editedEmail, setEditedEmail] = useState(userInfo.email);
+
+  const nicknameChangeHandler = (e) => setUserInfo({ ...userInfo, nickname: e.target.value });
+  const emailChangeHandler = (e) => setUserInfo({ ...userInfo, email: e.target.value });
   const [uploadImgUrl, setUploadImgUrl] = useState(user.profileImg || basicUserIcon);
 
   // 정보 저장 함수 + 토스트 출력
   const saveEditedInfo = (position) => {
-    // 로컬스토리지에 저장된 값 수정
-    localStorage.setItem('nickname', editedNickname);
-    localStorage.setItem('email', editedEmail);
     // 수정된 값을 불러와 state 관리
     setUserInfo({
-      nickname: user.nickname,
-      email: user.email,
+      nickname: userInfo.nickname,
+      email: userInfo.email,
     });
     // 모달창 닫음
     onClose();
@@ -81,24 +84,23 @@ const Profile = () => {
   };
 
   const modifyProfileImgHandler = () => {
-    // const formData = new FormData();
-    // formData.append('image', uploadImgUrl);
+    const formData = new FormData();
+    formData.append('image', uploadImgUrl);
     modifyUserImg(user.id, uploadImgUrl);
     localStorage.setItem('profileImg', uploadImgUrl);
   };
 
   // 로그아웃 처리
   const logoutHandler = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem('tokens');
     navigate('/');
-    // setIsLoggedIn(false);
+    clearUser();
   };
 
   return (
     <MainLayout>
       <Container>
-        <Header>안녕하세요, {userInfo.nickname}님!</Header>
+        <Header>안녕하세요, {user.nickname}님!</Header>
         <HR />
         <Tabs isFitted variant="soft-rounded" colorScheme="blue">
           <TabList mb={50}>
@@ -116,8 +118,8 @@ const Profile = () => {
                   <button onClick={modifyProfileImgHandler}>저장</button>
                 </ProfileBox>
                 <InfoBox>
-                  <UserInfo>닉네임 : {userInfo.nickname}</UserInfo>
-                  <UserInfo>이메일 : {userInfo.email}</UserInfo>
+                  <UserInfo>닉네임 : {user.nickname}</UserInfo>
+                  <UserInfo>이메일 : {user.email}</UserInfo>
                 </InfoBox>
               </UserInfoContainer>
               <EditButton onClick={onOpen}>edit profile</EditButton>
@@ -139,19 +141,11 @@ const Profile = () => {
               {/* Modal Input */}
               <FormControl>
                 <FormLabel>Nickname</FormLabel>
-                <Input
-                  value={editedNickname}
-                  onChange={(e) => setEditedNickname(e.target.value)}
-                  placeholder="Enter your nickname"
-                />
+                <Input value={userInfo.nickname} onChange={nicknameChangeHandler} placeholder="Enter your nickname" />
               </FormControl>
               <FormControl mt={4}>
                 <FormLabel>Email</FormLabel>
-                <Input
-                  value={editedEmail}
-                  onChange={(e) => setEditedEmail(e.target.value)}
-                  placeholder="Enter your email"
-                />
+                <Input value={userInfo.email} onChange={emailChangeHandler} placeholder="Enter your email" />
               </FormControl>
             </ModalBody>
 
