@@ -113,6 +113,7 @@ class PostManager {
     const date = this.dateFormat(new Date());
     const comment = [{}];
     const post = { id, type, title, content, author, date, comment };
+    console.log(post);
     this.posts.push(post);
     return post;
   }

@@ -26,6 +26,7 @@ import { Radio, RadioGroup } from '@chakra-ui/react'
 import { Stack } from '@chakra-ui/react'
 import PostItem from '../components/PostItem';
 import Loading from '../components/Loading';
+import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react';
 
 const Home = () => {
   // --- 희원 ---
@@ -76,6 +77,7 @@ const Home = () => {
 
   const handlePostClick = (post) => {
     navigate(`/${post.id}`, { state: { post } });
+    console.log(post);
   };
 
   // 새 게시글 작성 및 저장하는 함수
@@ -123,6 +125,45 @@ const Home = () => {
   const titleChangeHandler = (e) => setInputVal({ ...inputVal, title: e.target.value });
   const contentChangeHandler = (e) => setInputVal({ ...inputVal, content: e.target.value });
 
+  // 게시물 타입에 따라 출력을 다르게 해주는 분류자
+  const typeClassifier = (posts, type) => {
+    return posts
+      .filter((post) => post.type === type)
+      .map((post)=>(
+        <div key={post.id}>
+          <PostItem
+            key={post.id} 
+            onClick={() => handlePostClick(post)}
+            post={post}>
+          </PostItem>
+        </div>
+      ))
+    };
+
+  // 분류자로 분류된 게시물들 출력시켜주는 함수
+  const renderPosts = (type) => {
+    return (
+      <>
+        {isLoading && <Loading />}
+        {!isLoading && (
+          <Posts>
+            {type === "all"
+              ? posts.map((post) => (
+                  <div key={post.id}>
+                    <PostItem
+                      key={post.id}
+                      onClick={() => handlePostClick(post)}
+                      post={post}
+                    />
+                  </div>
+                ))
+              : typeClassifier(posts, type)}
+          </Posts>
+        )}
+    </>
+      )
+  };
+
   return (
     <MainLayout>
       <Container>
@@ -136,24 +177,33 @@ const Home = () => {
           </Button>
         </Header>
 
-        <TypeSection>
-          타입선택영역 구현예정
-        </TypeSection>
-
         <Content>
-          {/* 게시물 목록 */}
-          {isLoading && <Loading />}
-          {!isLoading && (
-            <Posts>
-              {posts.map((post) => (
-                <PostItem 
-                  key={post.id} 
-                  onClick={() => handlePostClick(post)} 
-                  post={post}>
-                </PostItem>
-              ))}
-            </Posts>
-          )}
+        <Tabs isFitted variant="soft-rounded" colorScheme="blue">
+          <TabList mb={50}>
+            <Tab>All</Tab>
+            <Tab>Board</Tab>
+            <Tab>Question</Tab>
+          </TabList>
+
+          <TabPanels>
+            {/* All */}
+            <TabPanel>
+              {renderPosts("all")}
+            </TabPanel>
+
+            {/* Board */}
+            <TabPanel>
+              {renderPosts("board")}
+            </TabPanel>
+
+            {/* Question */}
+            <TabPanel>
+              {renderPosts("question")}
+            </TabPanel>
+
+          </TabPanels>
+        </Tabs>
+          
 
           {/* Chakra UI Modal */}
           <Modal isOpen={isOpen} onClose={onClose} isCentered>
@@ -224,9 +274,6 @@ const Header = styled.div`
 const Logo = styled.h1`
   font-size: 1.6em;
 `;
-const TypeSection = styled.div`
-  
-`
 const Content = styled.div`
   padding: 20px;
   & > img {
