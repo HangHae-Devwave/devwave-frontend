@@ -7,7 +7,7 @@ const PostItem = ({ post, onClick }) => {
     <Post onClick={onClick}>
       <InfoContainer>
         <ProfileBox>
-          <ProfileImg />
+          <ProfileImg src={post.profileImg} />
           <div>
             <Author>{post.author}</Author>
             <BoardType>{post.type}</BoardType>

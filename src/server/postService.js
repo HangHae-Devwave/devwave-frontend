@@ -1,3 +1,5 @@
+const { getProfileImg } = require('./userService');
+
 const { v4: uuidv4 } = require('uuid');
 
 class PostManager {
@@ -96,7 +98,12 @@ class PostManager {
   // Home에 게시물 목록 띄우기
   async getPostList() {
     await this.sleep(1000);
-    return this.posts;
+    const newPosts = this.posts.map((post) => {
+      const newPost = { ...post, profileImg: getProfileImg(post.author) };
+      return newPost;
+    });
+    console.log('newPost: ', newPosts);
+    return newPosts;
   }
 
   // Detail에 특정게시물만 띄우기
