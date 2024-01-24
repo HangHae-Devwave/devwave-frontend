@@ -17,7 +17,12 @@ const NavBar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const token = localStorage.getItem('tokens');
   // 유저 데이터
-  const { data, isLoading } = useQuery('user', getUserData);
+  const { data, isLoading } = useQuery({
+    queryKey: 'user',
+    queryFn: getUserData,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
 
   useEffect(() => {
     // localStorage에서 토큰을 가져와서 로그인 상태 확인

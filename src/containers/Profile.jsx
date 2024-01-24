@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from 'react-query';
+import { MainLayout } from '../styles/GlobalStyles';
+import { modifyUserImg } from '../server/userService';
+import { Uploader } from 'uploader';
+import { UploadButton } from 'react-uploader';
 import { useToast } from '@chakra-ui/react';
 import { Wrap, WrapItem } from '@chakra-ui/react';
 import { useDisclosure } from '@chakra-ui/react-use-disclosure';
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react';
-import { MainLayout } from '../styles/GlobalStyles';
-import { modifyUserImg } from '../server/userService';
-import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from 'react-query';
 import {
   Modal,
   ModalOverlay,
@@ -24,6 +26,13 @@ import {
 import basicUserIcon from '../assets/basic-user-icon.svg';
 import ProfileImg from '../components/ProfileImg';
 import useUser from '../hooks/useUser';
+
+// 이미지 업로더
+const uploader = Uploader({
+  apiKey: 'free', // Get production API keys from Bytescale
+});
+
+const options = { multi: false };
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -71,22 +80,10 @@ const Profile = () => {
   // post 데이터 관련
   // const postManager = new PostManager();
 
-  // 프로필 이미지 업로드 로직
-  const imageUploadHandler = (e) => {
-    const { files } = e.target;
-    const uploadFile = files[0];
-    const reader = new FileReader();
-    reader.readAsDataURL(uploadFile);
-    reader.onloadend = () => {
-      setUploadImgUrl(reader.result);
-    };
-  };
-
-  const modifyProfileImgHandler = () => {
-    const formData = new FormData();
-    formData.append('image', uploadImgUrl);
-    modifyUserImg(user.id, uploadImgUrl);
-    localStorage.setItem('profileImg', uploadImgUrl);
+  const modifyProfileImgHandler = (fileUrl) => {
+    setUploadImgUrl(fileUrl);
+    modifyUserImg(user.id, fileUrl);
+    queryClient.setQueryData('user', { ...user, profileImg: fileUrl });
   };
 
   // 로그아웃 처리
@@ -113,8 +110,14 @@ const Profile = () => {
               <UserInfoContainer>
                 <ProfileBox>
                   <ProfileImg src={uploadImgUrl} size="100px" />
-                  <input type="file" accept="image/*" onChange={imageUploadHandler} />
-                  <button onClick={modifyProfileImgHandler}>저장</button>
+                  {/* <input type="file" accept="image/*" onChange={imageUploadHandler} />
+                  <button onClick={modifyProfileImgHandler}>저장</button> */}
+                  <UploadButton
+                    uploader={uploader}
+                    options={options}
+                    onComplete={(file) => modifyProfileImgHandler(file[0].fileUrl)}>
+                    {({ onClick }) => <button onClick={onClick}>이미지 변경하기</button>}
+                  </UploadButton>
                 </ProfileBox>
                 <InfoBox>
                   <UserInfo>닉네임 : {user.nickname}</UserInfo>
