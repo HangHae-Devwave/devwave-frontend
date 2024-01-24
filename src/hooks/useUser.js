@@ -7,13 +7,15 @@ const useUser = () => {
   const updateUser = (newUser) => {
     // 사용자 로그인이나, 사용자 정보 업데이트를 처리
     queryClient.setQueryData('user', newUser); // onSuccess를 트리거한다.
+    queryClient.setQueryData('isLoggedIn', true); // onSuccess를 트리거한다.
   };
 
   const clearUser = () => {
     // 로그아웃 처리
     queryClient.setQueryData('user', null); // onSuccess를 트리거한다.
+    queryClient.setQueryData('isLoggedIn', false);
     Cookies.remove('refreshToken');
   };
-  return [updateUser, clearUser];
+  return { updateUser, clearUser };
 };
 export default useUser;

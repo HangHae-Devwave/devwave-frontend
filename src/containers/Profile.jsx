@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useToast } from '@chakra-ui/react';
+import { Wrap, WrapItem } from '@chakra-ui/react';
+import { useDisclosure } from '@chakra-ui/react-use-disclosure';
+import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react';
+import { MainLayout } from '../styles/GlobalStyles';
+import { modifyUserImg } from '../server/userService';
+import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from 'react-query';
 import {
   Modal,
   ModalOverlay,
@@ -13,24 +21,15 @@ import {
   FormLabel,
   Input,
 } from '@chakra-ui/react';
-import { useToast } from '@chakra-ui/react';
-import { Wrap, WrapItem } from '@chakra-ui/react';
-import { useDisclosure } from '@chakra-ui/react-use-disclosure';
-import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react';
-import { MainLayout } from '../styles/GlobalStyles';
-import { modifyUserImg } from '../server/userService';
-// import PostManager from '../server/postService';
 import basicUserIcon from '../assets/basic-user-icon.svg';
 import ProfileImg from '../components/ProfileImg';
-import { useNavigate } from 'react-router-dom';
 import useUser from '../hooks/useUser';
-import { useQueryClient } from 'react-query';
 
 const Profile = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const user = queryClient.getQueryData('user');
-  const [updateUser, clearUser] = useUser();
+  const useUserHook = useUser();
 
   // 모달 관련
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -91,10 +90,10 @@ const Profile = () => {
   };
 
   // 로그아웃 처리
-  const logoutHandler = () => {
+  const logoutHandler = async () => {
+    await useUserHook.clearUser();
     localStorage.removeItem('tokens');
     navigate('/');
-    clearUser();
   };
 
   return (

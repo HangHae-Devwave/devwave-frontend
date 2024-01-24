@@ -12,12 +12,9 @@ import emailIcon from '../assets/email-icon.svg';
 import profileIcon from '../assets/profile-icon.svg';
 import lockIcon from '../assets/lock-icon.svg';
 import checkIcon from '../assets/check-icon.svg';
-import { jwtDecode } from 'jwt-decode';
-import useUser from '../hooks/useUser';
 
 const LoginSignUpForm = ({ type }) => {
   const navigate = useNavigate();
-  const [updateUser, clearUser] = useUser();
   const { showAlert } = useAlert();
 
   const [inputVal, setInputVal] = useState({ email: '', nickname: '', password: '', passwordConfirm: '' });
@@ -28,27 +25,39 @@ const LoginSignUpForm = ({ type }) => {
     isPasswordConfirmValid: true,
   });
 
-  const emailChangeHandler = (e) => {
+  const validateEmail = (email) => {
     const regex = /^[A-Za-z0-9]([-_.]?[A-Za-z0-9])*@[A-Za-z0-9]([-_.]?[A-Za-z0-9])*\.[A-Za-z]{2,3}$/;
+    return regex.test(email);
+  };
 
-    setInputVal({ ...inputVal, email: e.target.value });
-    setIsValid({ ...isValid, isEmailValid: regex.test(e.target.value) ? true : false });
+  const validateNickname = (nickname) => {
+    // 2자 이상 16자 이하, 영어 또는 숫자 또는 한글로 구성, 한글 초성 및 모음은 허가하지 않는다.
+    const regex = /^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,16}$/;
+    return regex.test(nickname);
+  };
+
+  const validatePassword = (password) => {
+    //  8 ~ 10자 영문, 숫자 조합
+    const regex = /^(?=.*\d)(?=.*[a-zA-Z])[0-9a-zA-Z]{8,10}$/;
+    return regex.test(password);
+  };
+
+  const emailChangeHandler = (e) => {
+    const email = e.target.value;
+    setInputVal({ ...inputVal, email });
+    setIsValid({ ...isValid, isEmailValid: validateEmail(email) });
   };
 
   const nicknameChangeHandler = (e) => {
-    // 2자 이상 16자 이하, 영어 또는 숫자 또는 한글로 구성, 한글 초성 및 모음은 허가하지 않는다.
-    const regex = /^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,16}$/;
-
-    setInputVal({ ...inputVal, nickname: e.target.value });
-    setIsValid({ ...isValid, isNicknameValid: regex.test(e.target.value) ? true : false });
+    const nickname = e.target.value;
+    setInputVal({ ...inputVal, nickname });
+    setIsValid({ ...isValid, isNicknameValid: validateNickname(nickname) });
   };
 
   const passwordChangeHandler = (e) => {
-    //  8 ~ 10자 영문, 숫자 조합
-    const regex = /^(?=.*\d)(?=.*[a-zA-Z])[0-9a-zA-Z]{8,10}$/;
-
-    setInputVal({ ...inputVal, password: e.target.value });
-    setIsValid({ ...isValid, isPasswordValid: regex.test(e.target.value) ? true : false });
+    const password = e.target.value;
+    setInputVal({ ...inputVal, password });
+    setIsValid({ ...isValid, isPasswordValid: validatePassword(password) });
   };
 
   const passwordConfirmChangeHandler = (e) => {
@@ -100,14 +109,13 @@ const LoginSignUpForm = ({ type }) => {
           localStorage.setItem(
             'tokens',
             JSON.stringify({
-              userId: userId,
               accessToken: accessToken,
               refreshToken: refreshToken,
             })
           );
+          localStorage.setItem('userId', userId);
           showAlert('로그인 성공', 'success');
           navigate('/');
-          updateUser(jwtDecode(accessToken));
         })
         .catch((error) => {
           showAlert(error.message, 'error');
