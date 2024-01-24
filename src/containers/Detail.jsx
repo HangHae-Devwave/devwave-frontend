@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MainLayout } from '../styles/GlobalStyles';
@@ -17,6 +17,11 @@ const Detail = () => {
   const postContent = location.post.content;
   const [postComments, setPostComments] = useState(location.post.comment || [{}]);
 
+  // 로그인 여부 체크
+  const checkLoginStatus = () => {
+    return !!localStorage.getItem('token') ? true : false
+  }
+
   // 이전 페이지로 돌아가기 기능을 위한 navigate
   const navigate = useNavigate();
   const previousPageHandler = () => {
@@ -33,12 +38,10 @@ const Detail = () => {
   // 댓글 데이터 상태관리
   const [newReply, setNewReply] = useState('');
   const postManager = new PostManager();
-
   const replyChangeHandler = (e) => setNewReply(e.target.value)
-
   const saveNewReply = async () => {
     // 로그인한 사용자만 댓글 달 수 있도록 설정
-    if (!localStorage.getItem('token')) {
+    if (!checkLoginStatus) {
       toast({
         title: '작성 오류',
         status: "error",
@@ -64,7 +67,6 @@ const Detail = () => {
         if (post.id === postId) {
           // 해당 게시물의 comment 내부에 새로운 댓글 추가
           post.comment = post.comment ? [...post.comment, createdReply] : [createdReply];
-          console.log(post.comment);
         }
         return post;
       });
@@ -88,13 +90,50 @@ const Detail = () => {
 
   // const { isOpen, onOpen, onClose } = useDisclosure();
 
-  // // 게시글 삭제 버튼
-  // const editButtonHandler = () => {
-    
-  // }
-  // const deleteButtonHandler = () => {
+  // 게시글 삭제 버튼 핸들러
+  const deleteButtonHandler = () => {
+    if(!checkLoginStatus){
+      // 삭제 실패 : 비로그인 사용자 접근
+      toast({
+        title: '삭제 실패',
+        status: "error",
+        description: '로그인을 하지 않았습니다.',
+      });
+    }
+    const currentUser = localStorage.getItem("nickname");
+    console.log(`currentUser : ${currentUser}`);
+    console.log(`postAuthor : ${postAuthor}`);
+    // 로그인된 사용자와 게시물 작성자를 비교
+    if(currentUser===postAuthor){
+      console.log(postManager.deletePost(postId))
+      // 삭제 성공 
+      toast({
+        title: '삭제 성공',
+        status: "success",
+        description: '게시물이 삭제되었습니다.',
+      });
 
-  // }
+      // localstorage에서 데이터 삭제 반영
+      const storedPosts = localStorage.getItem('posts');
+      let posts = storedPosts ? JSON.parse(storedPosts) : [];
+
+      // 해당 게시물 제외하고 다시 저장
+      posts = posts.filter((post) => post.id !== postId);
+      localStorage.setItem('posts', JSON.stringify(posts));
+
+      // 3초 딜레이 후 홈으로 이동
+      postManager.sleep(3000);
+      navigate('/');
+    }
+    // 삭제 실패 : 작성자가 아닌 사용자가 삭제시도
+    else{
+      toast({
+        title: '삭제 실패',
+        status: "error",
+        description: '작성자만 삭제할 수 있습니다.',
+      });
+    }
+  }
 
   return (
     <MainLayout>
@@ -111,8 +150,14 @@ const Detail = () => {
           <Author>작성자: {postAuthor}</Author>
           <Content>{postContent}</Content>
           <ButtonGroup position="absolute" right={5} bottom={5}>
-            <Button colorScheme='teal'>수정</Button>
-            <Button ml={5} colorScheme='pink'>삭제</Button>
+            {/* <Button colorScheme='teal'>수정</Button> */}
+            <Button 
+              ml={5} 
+              colorScheme='pink'
+              // display='none'
+              onClick={()=>deleteButtonHandler()}>
+                삭제
+              </Button>
           </ButtonGroup>
         </ContentWrapper>
 

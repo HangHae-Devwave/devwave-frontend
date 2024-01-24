@@ -200,7 +200,6 @@ const Home = () => {
             <TabPanel>
               {renderPosts("question")}
             </TabPanel>
-
           </TabPanels>
         </Tabs>
           
@@ -212,6 +211,7 @@ const Home = () => {
               <ModalHeader>Create a Post</ModalHeader>
               <ModalCloseButton />
               <ModalBody>
+
                 {/* Modal Input */}
                 <FormControl>
                   <FormLabel>Title</FormLabel>
@@ -220,6 +220,7 @@ const Home = () => {
                     onChange={titleChangeHandler} 
                     placeholder="Enter New Title" />
                 </FormControl>
+
                 <FormControl mt={4}>
                   <FormLabel>Type</FormLabel>
                   <RadioGroup value={inputVal.type} onChange={(e)=>typeChangeHandler(e)}>
@@ -229,6 +230,7 @@ const Home = () => {
                     </Stack>
                   </RadioGroup>
                 </FormControl>
+
                 <FormControl mt={4}>
                   <FormLabel>Content</FormLabel>
                   <Input
@@ -244,13 +246,17 @@ const Home = () => {
               <ModalFooter>
                 <Wrap>
                     <WrapItem>
-                      <Button colorScheme="blue" mr={3} onClick={() => saveNewPost()}>
-                        Save
+                      <Button 
+                        colorScheme="blue" 
+                        mr={3} 
+                        onClick={() => saveNewPost()}>
+                          Save
                       </Button>
                     </WrapItem>
                 </Wrap>
                 <Button onClick={onClose}>Cancel</Button>
               </ModalFooter>
+
             </ModalContent>
           </Modal>
         </Content>
