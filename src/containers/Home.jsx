@@ -4,8 +4,7 @@ import PostManager from '../server/postService';
 import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '../styles/GlobalStyles';
 import { useQueryClient, useQuery } from 'react-query';
-// chakra modal
-import { useDisclosure } from '@chakra-ui/react-use-disclosure';
+import { useDisclosure } from '@chakra-ui/react-use-disclosure'; // chakra modal
 import {
   Modal,
   ModalOverlay,
@@ -20,10 +19,8 @@ import {
   Input,
 } from '@chakra-ui/react';
 import { Wrap, WrapItem } from '@chakra-ui/react';
-// chakra toast
-import { useToast } from '@chakra-ui/react';
+import { useToast } from '@chakra-ui/react'; // chakra toast
 import PostItem from '../components/PostItem';
-// import Button from '../components/button/Button';
 import Loading from '../components/Loading';
 
 const postManager = new PostManager();

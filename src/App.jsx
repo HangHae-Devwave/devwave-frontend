@@ -1,21 +1,24 @@
 import React from 'react';
 import Router from './routes/Router';
-import { QueryClient, QueryClientProvider } from 'react-query';
-import { AlertProvider } from './contexts/AlertProvider';
-import { ChakraProvider } from '@chakra-ui/react';
+import { useQuery } from 'react-query';
+import { getUser } from './server/userService';
 
-const queryClient = new QueryClient();
+const fetchUserData = async () => {
+  const userId = localStorage.getItem('userId');
+  const user = await getUser(userId);
+  return user;
+};
 
 const App = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ChakraProvider>
-        <AlertProvider>
-          <Router />
-        </AlertProvider>
-      </ChakraProvider>
-    </QueryClientProvider>
-  );
+  // 유저 데이터
+  const { isLoading } = useQuery({
+    queryKey: 'user',
+    queryFn: fetchUserData,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
+
+  return <>{!isLoading && <Router />}</>;
 };
 
 export default React.memo(App);
