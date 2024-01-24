@@ -21,9 +21,7 @@ const Detail = () => {
 
   // 이전 페이지로 돌아가기 기능을 위한 navigate
   const navigate = useNavigate();
-  const previousPageHandler = () => {
-    navigate('/');
-  };
+  const previousPageHandler = () => navigate('/');
 
   return (
     <MainLayout>

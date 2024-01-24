@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
 import { SHA256 } from 'crypto-js';
 import { useAlert } from '../contexts/AlertProvider';
-import * as UserService from '../server/userService';
+import { authenticateUser, createUser, refresh } from '../server/userService';
+import Cookies from 'js-cookie';
 import styled from 'styled-components';
 import Button from './button/Button';
 import Input from './input/Input';
@@ -25,32 +25,73 @@ const LoginSignUpForm = ({ type }) => {
     isPasswordConfirmValid: true,
   });
 
-  const emailChangeHandler = (e) => {
+  const validateEmail = (email) => {
     const regex = /^[A-Za-z0-9]([-_.]?[A-Za-z0-9])*@[A-Za-z0-9]([-_.]?[A-Za-z0-9])*\.[A-Za-z]{2,3}$/;
+    return regex.test(email);
+  };
 
-    setInputVal({ ...inputVal, email: e.target.value });
-    setIsValid({ ...isValid, isEmailValid: regex.test(e.target.value) ? true : false });
+  const validateNickname = (nickname) => {
+    // 2자 이상 16자 이하, 영어 또는 숫자 또는 한글로 구성, 한글 초성 및 모음은 허가하지 않는다.
+    const regex = /^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,16}$/;
+    return regex.test(nickname);
+  };
+
+  const validatePassword = (password) => {
+    //  8 ~ 10자 영문, 숫자 조합
+    const regex = /^(?=.*\d)(?=.*[a-zA-Z])[0-9a-zA-Z]{8,10}$/;
+    return regex.test(password);
+  };
+
+  const emailChangeHandler = (e) => {
+    const email = e.target.value;
+    setInputVal({ ...inputVal, email });
+    setIsValid({ ...isValid, isEmailValid: validateEmail(email) });
   };
 
   const nicknameChangeHandler = (e) => {
-    // 2자 이상 16자 이하, 영어 또는 숫자 또는 한글로 구성, 한글 초성 및 모음은 허가하지 않는다.
-    const regex = /^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,16}$/;
-
-    setInputVal({ ...inputVal, nickname: e.target.value });
-    setIsValid({ ...isValid, isNicknameValid: regex.test(e.target.value) ? true : false });
+    const nickname = e.target.value;
+    setInputVal({ ...inputVal, nickname });
+    setIsValid({ ...isValid, isNicknameValid: validateNickname(nickname) });
   };
 
   const passwordChangeHandler = (e) => {
-    //  8 ~ 10자 영문, 숫자 조합
-    const regex = /^(?=.*\d)(?=.*[a-zA-Z])[0-9a-zA-Z]{8,10}$/;
-
-    setInputVal({ ...inputVal, password: e.target.value });
-    setIsValid({ ...isValid, isPasswordValid: regex.test(e.target.value) ? true : false });
+    const password = e.target.value;
+    setInputVal({ ...inputVal, password });
+    setIsValid({ ...isValid, isPasswordValid: validatePassword(password) });
   };
 
   const passwordConfirmChangeHandler = (e) => {
     setInputVal({ ...inputVal, passwordConfirm: e.target.value });
     setIsValid({ ...isValid, isPasswordConfirmValid: inputVal.password === e.target.value ? true : false });
+  };
+
+  const getTokenFromLocal = async () => {
+    try {
+      const accessToken = await localStorage.getItem('accessToken');
+      const refreshToken = Cookies.get('refreshToken');
+      if (accessToken && refreshToken) {
+        return { accessToken, refreshToken };
+      } else {
+        return null;
+      }
+    } catch (e) {
+      console.log(e.message);
+    }
+  };
+
+  const verifyTokens = async () => {
+    const token = await getTokenFromLocal();
+
+    try {
+      const res = await refresh(token.accessToken, token.refreshToken);
+
+      // accessToken 만료, refreshToken 정상 -> 재발급된 accessToken 저장 후 자동 로그인
+      localStorage.setItem('accessToken', res.accessToken);
+      Cookies.set('refreshToken', res.refreshToken);
+    } catch (e) {
+      // const code = e.code;
+      console.log('error: ', e);
+    }
   };
 
   const loginHandler = async () => {
@@ -63,14 +104,16 @@ const LoginSignUpForm = ({ type }) => {
     }
 
     if (isValid.isEmailValid && isValid.isPasswordValid) {
-      await UserService.authenticateUser(inputVal.email, SHA256(inputVal.password).toString())
-        .then((token) => {
-          const decoded = jwtDecode(token);
-          localStorage.setItem('token', token);
-          localStorage.setItem('id', decoded.id);
-          localStorage.setItem('email', decoded.email);
-          localStorage.setItem('nickname', decoded.nickname);
-          localStorage.setItem('profileImg', decoded.profileImg);
+      await authenticateUser(inputVal.email, SHA256(inputVal.password).toString())
+        .then(({ userId, accessToken, refreshToken }) => {
+          localStorage.setItem(
+            'tokens',
+            JSON.stringify({
+              accessToken: accessToken,
+              refreshToken: refreshToken,
+            })
+          );
+          localStorage.setItem('userId', userId);
           showAlert('로그인 성공', 'success');
           navigate('/');
         })
@@ -101,7 +144,7 @@ const LoginSignUpForm = ({ type }) => {
     }
 
     if (isValid.isEmailValid && isValid.isNicknameValid && isValid.isPasswordValid && isValid.isPasswordConfirmValid) {
-      await UserService.createUser(inputVal.email, inputVal.nickname, SHA256(inputVal.password).toString())
+      await createUser(inputVal.email, inputVal.nickname, SHA256(inputVal.password).toString())
         .then((response) => {
           showAlert(response, 'success');
           navigate('/login');

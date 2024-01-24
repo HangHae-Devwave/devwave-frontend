@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from 'react-query';
+import { MainLayout } from '../styles/GlobalStyles';
+import { modifyUserImg } from '../server/userService';
+import { Uploader } from 'uploader';
+import { UploadButton } from 'react-uploader';
+import { useToast } from '@chakra-ui/react';
+import { Wrap, WrapItem } from '@chakra-ui/react';
+import { useDisclosure } from '@chakra-ui/react-use-disclosure';
+import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react';
 import {
   Modal,
   ModalOverlay,
@@ -13,17 +23,23 @@ import {
   FormLabel,
   Input,
 } from '@chakra-ui/react';
-import { useToast } from '@chakra-ui/react';
-import { Wrap, WrapItem } from '@chakra-ui/react';
-import { useDisclosure } from '@chakra-ui/react-use-disclosure';
-import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react';
-import { MainLayout } from '../styles/GlobalStyles';
-import { modifyUserImg } from '../server/userService';
-// import PostManager from '../server/postService';
 import basicUserIcon from '../assets/basic-user-icon.svg';
 import ProfileImg from '../components/ProfileImg';
+import useUser from '../hooks/useUser';
+
+// 이미지 업로더
+const uploader = Uploader({
+  apiKey: 'free', // Get production API keys from Bytescale
+});
+
+const options = { multi: false };
 
 const Profile = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const user = queryClient.getQueryData('user');
+  const useUserHook = useUser();
+
   // 모달 관련
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -33,22 +49,20 @@ const Profile = () => {
 
   // 사용자 정보관련
   const [userInfo, setUserInfo] = useState({
-    nickname: localStorage.getItem('nickname'),
-    email: localStorage.getItem('email'),
+    nickname: user.nickname,
+    email: user.email,
   });
-  const [editedNickname, setEditedNickname] = useState(userInfo.nickname);
-  const [editedEmail, setEditedEmail] = useState(userInfo.email);
-  const [uploadImgUrl, setUploadImgUrl] = useState(localStorage.getItem('profileImg') || basicUserIcon);
+
+  const nicknameChangeHandler = (e) => setUserInfo({ ...userInfo, nickname: e.target.value });
+  const emailChangeHandler = (e) => setUserInfo({ ...userInfo, email: e.target.value });
+  const [uploadImgUrl, setUploadImgUrl] = useState(user.profileImg || basicUserIcon);
 
   // 정보 저장 함수 + 토스트 출력
   const saveEditedInfo = (position) => {
-    // 로컬스토리지에 저장된 값 수정
-    localStorage.setItem('nickname', editedNickname);
-    localStorage.setItem('email', editedEmail);
     // 수정된 값을 불러와 state 관리
     setUserInfo({
-      nickname: localStorage.getItem('nickname'),
-      email: localStorage.getItem('email'),
+      nickname: userInfo.nickname,
+      email: userInfo.email,
     });
     // 모달창 닫음
     onClose();
@@ -66,34 +80,23 @@ const Profile = () => {
   // post 데이터 관련
   // const postManager = new PostManager();
 
-  // 프로필 이미지 업로드 로직
-  const imageUploadHandler = (e) => {
-    const { files } = e.target;
-    const uploadFile = files[0];
-    const reader = new FileReader();
-    reader.readAsDataURL(uploadFile);
-    reader.onloadend = () => {
-      setUploadImgUrl(reader.result);
-    };
-  };
-
-  const modifyProfileImgHandler = () => {
-    // const formData = new FormData();
-    // formData.append('image', uploadImgUrl);
-    modifyUserImg(localStorage.getItem('id'), uploadImgUrl);
-    localStorage.setItem('profileImg', uploadImgUrl);
+  const modifyProfileImgHandler = (fileUrl) => {
+    setUploadImgUrl(fileUrl);
+    modifyUserImg(user.id, fileUrl);
+    queryClient.setQueryData('user', { ...user, profileImg: fileUrl });
   };
 
   // 로그아웃 처리
-  const logoutHandler = () => {
-    localStorage.removeItem('token');
-    // setIsLoggedIn(false);
+  const logoutHandler = async () => {
+    await useUserHook.clearUser();
+    localStorage.removeItem('tokens');
+    navigate('/');
   };
 
   return (
     <MainLayout>
       <Container>
-        <Header>안녕하세요, {userInfo.nickname}님!</Header>
+        <Header>안녕하세요, {user.nickname}님!</Header>
         <HR />
         <Tabs isFitted variant="soft-rounded" colorScheme="blue">
           <TabList mb={50}>
@@ -107,12 +110,18 @@ const Profile = () => {
               <UserInfoContainer>
                 <ProfileBox>
                   <ProfileImg src={uploadImgUrl} size="100px" />
-                  <input type="file" accept="image/*" onChange={imageUploadHandler} />
-                  <button onClick={modifyProfileImgHandler}>저장</button>
+                  {/* <input type="file" accept="image/*" onChange={imageUploadHandler} />
+                  <button onClick={modifyProfileImgHandler}>저장</button> */}
+                  <UploadButton
+                    uploader={uploader}
+                    options={options}
+                    onComplete={(file) => modifyProfileImgHandler(file[0].fileUrl)}>
+                    {({ onClick }) => <button onClick={onClick}>이미지 변경하기</button>}
+                  </UploadButton>
                 </ProfileBox>
                 <InfoBox>
-                  <UserInfo>닉네임 : {userInfo.nickname}</UserInfo>
-                  <UserInfo>이메일 : {userInfo.email}</UserInfo>
+                  <UserInfo>닉네임 : {user.nickname}</UserInfo>
+                  <UserInfo>이메일 : {user.email}</UserInfo>
                 </InfoBox>
               </UserInfoContainer>
               <EditButton onClick={onOpen}>edit profile</EditButton>
@@ -134,19 +143,11 @@ const Profile = () => {
               {/* Modal Input */}
               <FormControl>
                 <FormLabel>Nickname</FormLabel>
-                <Input
-                  value={editedNickname}
-                  onChange={(e) => setEditedNickname(e.target.value)}
-                  placeholder="Enter your nickname"
-                />
+                <Input value={userInfo.nickname} onChange={nicknameChangeHandler} placeholder="Enter your nickname" />
               </FormControl>
               <FormControl mt={4}>
                 <FormLabel>Email</FormLabel>
-                <Input
-                  value={editedEmail}
-                  onChange={(e) => setEditedEmail(e.target.value)}
-                  placeholder="Enter your email"
-                />
+                <Input value={userInfo.email} onChange={emailChangeHandler} placeholder="Enter your email" />
               </FormControl>
             </ModalBody>
 
@@ -231,9 +232,6 @@ const UserInfo = styled.div`
   font-size: 25px;
   display: flex;
   flex-direction: row;
-`;
-const Label = styled.div`
-  width: 300px;
 `;
 
 const UserInfoContainer = styled.div`

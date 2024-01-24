@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
+import PostManager from '../server/postService';
 import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '../styles/GlobalStyles';
-import PostManager from '../server/postService';
+import { useQueryClient, useQuery } from 'react-query';
 // chakra modal
 import { useDisclosure } from '@chakra-ui/react-use-disclosure';
 import {
@@ -25,6 +26,13 @@ import PostItem from '../components/PostItem';
 // import Button from '../components/button/Button';
 import Loading from '../components/Loading';
 
+const postManager = new PostManager();
+
+const fetchPosts = async () => {
+  const response = await postManager.getPostList();
+  return response;
+};
+
 const Home = () => {
   // --- 희원 ---
   // 게시물 클릭시 게시물 상세페이지로 이동
@@ -37,37 +45,10 @@ const Home = () => {
   // 게시물 작성시 사용되는 state
   const [inputVal, setInputVal] = useState({ type: 'board', title: '', content: '' });
   // 게시물 데이터 상태관리
-  const [posts, setPosts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data, isLoading } = useQuery({ queryKey: ['posts'], queryFn: fetchPosts });
   // 토스트 메시지 관련 toast 생성
   const toast = useToast();
-
-  useEffect(() => {
-    // 서버에서 데이터를 가져와서 로컬 상태에 설정하는 비동기 함수
-    const fetchPosts = async () => {
-      // localStorage에 저장된 posts 데이터가 있다면
-      // 서버 호출하지 않고 localStorage 데이터를 posts에 저장
-      // if (localStorage.getItem('posts').length) {
-      //   setPosts(JSON.parse(localStorage.getItem('posts')));
-      // } else {
-      // 서버에서 데이터를 가져오는 비동기 요청
-      await postManager
-        .getPostList()
-        .then((response) => {
-          localStorage.setItem('posts', JSON.stringify(response));
-          setPosts(response);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-      // }
-      setIsLoading(false);
-    };
-
-    // 컴포넌트가 마운트될 때 한 번 데이터를 가져오도록 호출
-    fetchPosts();
-  }, []); // 빈 배열은 컴포넌트가 마운트될 때만 실행되도록 보장
-
   const handlePostClick = (post) => {
     navigate(`/${post.id}`, { state: { post } });
   };
@@ -83,10 +64,10 @@ const Home = () => {
       const createdPost = await postManager.createPost(
         inputVal.title,
         inputVal.content,
-        localStorage.getItem('nickname')
+        JSON.parse(localStorage.getItem('user')).nickname
       );
       // 기존 게시물 목록에 새 게시글 추가 후 상태 업데이트
-      setPosts((prevPosts) => [...prevPosts, createdPost]);
+      queryClient.setQueryData('posts', { ...data, createdPost });
       // 모달 닫기 및 입력 폼 초기화
       onClose();
       setInputVal({ type: 'board', title: '', content: '' });
@@ -124,7 +105,7 @@ const Home = () => {
           {isLoading && <Loading />}
           {!isLoading && (
             <Posts>
-              {posts.map((post) => (
+              {data.map((post) => (
                 <PostItem key={post.id} onClick={() => handlePostClick(post)} post={post}></PostItem>
               ))}
             </Posts>
@@ -191,6 +172,7 @@ const Header = styled.div`
 const Logo = styled.h1`
   font-size: 1.6em;
 `;
+
 const NewPostButton = styled.button`
   background-color: #fff;
   color: #333;
@@ -198,6 +180,7 @@ const NewPostButton = styled.button`
   border: none;
   border-radius: 5px;
   cursor: pointer;
+
   &:hover {
     transition: 0.3s ease;
     background-color: #494949;
