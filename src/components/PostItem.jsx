@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import styled from 'styled-components';
 import ProfileImg from './ProfileImg';
 
-const PostItem = ({ post, onClick }) => {
+const PostItem = forwardRef(({ post, onClick }, ref) => {
   return (
-    <Post onClick={onClick}>
+    <Post onClick={onClick} ref={ref}>
       <InfoContainer>
         <ProfileBox>
-          <ProfileImg />
+          <ProfileImg src={post.profileImg} />
           <div>
             <Author>{post.author}</Author>
             <BoardType>{post.type}</BoardType>
@@ -19,7 +19,7 @@ const PostItem = ({ post, onClick }) => {
       <PostContent>{post.content.length < 50 ? post.content : post.content.slice(0, 47) + ' ...'}</PostContent>
     </Post>
   );
-};
+});
 
 const Post = styled.div`
   background-color: #f7fbff;

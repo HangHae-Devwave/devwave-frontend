@@ -165,6 +165,11 @@ const getUser = async (id) => {
   return user;
 };
 
+const getProfileImg = (id) => {
+  const user = userList.find((user) => user.nickname === id);
+  return !!user ? user.profileImg : '';
+};
+
 // 유저 정보(이메일 / 닉네임) 변경
 const modifyUserInfo = async (id, email, nickname) => {
   await sleep(1000);
@@ -203,6 +208,7 @@ export {
   refresh,
   createUser,
   getUser,
+  getProfileImg,
   modifyUserInfo,
   modifyUserPassword,
   modifyUserImg,

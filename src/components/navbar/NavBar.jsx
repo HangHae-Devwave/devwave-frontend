@@ -1,28 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from 'react-query';
-import { getUser } from '../../server/userService';
 import styled from 'styled-components';
 import ProfileImg from '../ProfileImg';
 import logo from '../../assets/devwave-logo.png';
-
-const getUserData = async () => {
-  const userId = localStorage.getItem('userId');
-  const user = await getUser(userId);
-  return user;
-};
+import { useQueryClient } from 'react-query';
 
 const NavBar = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const token = localStorage.getItem('tokens');
-  // 유저 데이터
-  const { data, isLoading } = useQuery({
-    queryKey: 'user',
-    queryFn: getUserData,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  });
+  const profileImg = queryClient.getQueryData('user') ? queryClient.getQueryData('user').profileImg : '';
 
   useEffect(() => {
     // localStorage에서 토큰을 가져와서 로그인 상태 확인
@@ -44,9 +32,9 @@ const NavBar = () => {
       <Navbar>
         <img src={logo} alt="" onClick={() => logoClickHandler()} />
         <NavBox>
-          {isLoggedIn && !isLoading ? (
+          {isLoggedIn ? (
             // 로그인 상태일 때, 프로필과 로그아웃 버튼 표시
-            <ProfileImg src={data.profileImg} onClick={profileClickHandler} />
+            <ProfileImg src={profileImg} onClick={profileClickHandler} />
           ) : (
             // 로그인 상태가 아닐 때, 로그인과 회원가입 버튼 표시
             <>

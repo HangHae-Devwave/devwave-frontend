@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import PostManager from '../server/postService';
 import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '../styles/GlobalStyles';
-// chakra modal
-import { useDisclosure } from '@chakra-ui/react-use-disclosure';
+import { useDisclosure } from '@chakra-ui/react-use-disclosure'; // chakra modal
 import {
   Modal,
   ModalOverlay,
@@ -19,26 +18,51 @@ import {
   Input,
 } from '@chakra-ui/react';
 import { Wrap, WrapItem } from '@chakra-ui/react';
-// chakra toast
-import { useToast } from '@chakra-ui/react';
-// chakra radio
-import { Radio, RadioGroup } from '@chakra-ui/react';
+import { useToast } from '@chakra-ui/react'; // chakra toast
+import { Radio, RadioGroup } from '@chakra-ui/react'; // chakra radio
 import { Stack } from '@chakra-ui/react';
-import PostItem from '../components/PostItem';
-import Loading from '../components/Loading';
+import { Skeleton, SkeletonCircle, SkeletonText } from '@chakra-ui/react'; // chakra skeleton
+import { Box } from '@chakra-ui/react';
+import { useInView } from 'react-intersection-observer';
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react';
+import PostItem from '../components/PostItem';
 
 const Home = () => {
-  // --- 희원 ---
-  // 게시물 클릭시 게시물 상세페이지로 이동
   const navigate = useNavigate();
-  const [posts, setPosts] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  // 모달관련 함수 호출
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  // --- 민지 ---
+
   // 게시물 CRUD관련 클래스 객체 생성
   const postManager = new PostManager();
+
+  // 게시물 데이터 상태관리
+  const [posts, setPosts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [ref, inView] = useInView();
+
+  const fetchPosts = useCallback(async () => {
+    setIsLoading(true);
+    const response = await postManager.getPostList(page);
+    setPosts((prevState) => [...prevState, ...response]);
+    setIsLoading(false);
+    console.log(page);
+  }, [page]);
+
+  // fetchPosts이 바뀔 때마다 함수 실행
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
+
+  useEffect(() => {
+    // 사용자가 마지막 요소를 보고 있고, 로딩 중이 아니라면
+    if (inView && !isLoading) {
+      setPage((prevState) => prevState + 1);
+    }
+  }, [inView, isLoading]);
+
+  // 모달관련 함수 호출
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   // 게시물 작성시 사용되는 state
   const [inputVal, setInputVal] = useState({ type: '', title: '', content: '' });
   // 토스트 메시지 관련 toast 생성
@@ -74,10 +98,7 @@ const Home = () => {
     fetchPosts();
   }, []); // 빈 배열은 컴포넌트가 마운트될 때만 실행되도록 보장
 
-  const handlePostClick = (post) => {
-    navigate(`/${post.id}`, { state: { post } });
-    console.log(post);
-  };
+  const handlePostClick = (post) => navigate(`/${post.id}`, { state: { post } });
 
   // 새 게시글 작성 및 저장하는 함수
   const saveNewPost = async () => {
@@ -89,7 +110,6 @@ const Home = () => {
       });
       return;
     }
-    // --- 민지 ---
     if (!!inputVal.title && !!inputVal.content) {
       const createdPost = await postManager.createPost(
         inputVal.type,
@@ -139,18 +159,41 @@ const Home = () => {
   const renderPosts = (type) => {
     return (
       <>
-        {isLoading && <Loading />}
-        {!isLoading && (
-          <Posts>
-            {type === 'all'
-              ? posts.map((post) => (
-                  <div key={post.id}>
-                    <PostItem key={post.id} onClick={() => handlePostClick(post)} post={post} />
-                  </div>
-                ))
-              : typeClassifier(posts, type)}
-          </Posts>
-        )}
+        <Posts>
+          {type === 'all'
+            ? posts.map((post, idx) => (
+                <React.Fragment key={idx}>
+                  {posts.length - 1 === idx ? (
+                    // {isLoading && <Loading />}
+                    <PostItem
+                      ref={ref}
+                      onClick={() => handlePostClick(post)}
+                      post={post}
+                      isLoading={isLoading}></PostItem>
+                  ) : (
+                    <PostItem onClick={() => handlePostClick(post)} post={post} isLoading={isLoading}></PostItem>
+                  )}
+                </React.Fragment>
+              ))
+            : typeClassifier(posts, type)}
+          {/* 로딩 중일 때 Skeleton UI 표시*/}
+          {/* 최초엔 5 개의 스켈레톤 표시 */}
+          {isLoading &&
+            posts.length === 0 &&
+            Array.from({ length: 5 }, (_, index) => (
+              <Box key={index} padding="10" boxShadow="lg" bg="#f7fbff">
+                <SkeletonCircle size="8" />
+                <SkeletonText mt="8" noOfLines={4} spacing="4" skeletonHeight="2" />
+              </Box>
+            ))}
+          {/* 그 이후에는 한 개의 스켈레톤만 보여주기 */}
+          {isLoading && posts.length > 1 && (
+            <Box padding="10" boxShadow="lg" bg="#f7fbff">
+              <SkeletonCircle size="8" />
+              <SkeletonText mt="8" noOfLines={4} spacing="4" skeletonHeight="2" />
+            </Box>
+          )}
+        </Posts>
       </>
     );
   };
@@ -184,7 +227,6 @@ const Home = () => {
               <TabPanel>{renderPosts('question')}</TabPanel>
             </TabPanels>
           </Tabs>
-
           {/* Chakra UI Modal */}
           <Modal isOpen={isOpen} onClose={onClose} isCentered>
             <ModalOverlay />

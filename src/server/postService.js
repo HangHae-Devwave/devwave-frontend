@@ -1,3 +1,5 @@
+const { getProfileImg } = require('./userService');
+
 const { v4: uuidv4 } = require('uuid');
 
 class PostManager {
@@ -94,9 +96,13 @@ class PostManager {
   };
 
   // Home에 게시물 목록 띄우기
-  async getPostList() {
+  async getPostList(page) {
     await this.sleep(1000);
-    return this.posts;
+    const newPosts = this.posts.map((post) => {
+      const newPost = { ...post, profileImg: getProfileImg(post.author) };
+      return newPost;
+    });
+    return newPosts;
   }
 
   // Detail에 특정게시물만 띄우기
@@ -117,17 +123,17 @@ class PostManager {
     this.posts.push(post);
     return post;
   }
-  
+
   // Detail에 댓글데이터 추가하기
-  async createReply(postId, replyAuthor, replyContent){
+  async createReply(postId, replyAuthor, replyContent) {
     await this.sleep(1000);
     const targetPost = this.posts.find((post) => post.id === postId);
     // console.log(targetPost);
     const uniqueId = uuidv4();
     const replyId = `reply_${uniqueId}`;
-    const replyData = {replyId, replyAuthor, replyContent};
+    const replyData = { replyId, replyAuthor, replyContent };
     targetPost.comment.push(replyData);
-    return replyData
+    return replyData;
   }
 
   // Detail에 특정 게시물 수정하기
