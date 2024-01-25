@@ -105,9 +105,11 @@ const Profile = () => {
   };
 
   const modifyProfileImgHandler = (fileUrl) => {
-    setUploadImgUrl(fileUrl);
-    modifyUserImg(user.id, fileUrl);
-    queryClient.setQueryData('user', { ...user, profileImg: fileUrl });
+    if (!!fileUrl) {
+      setUploadImgUrl(fileUrl);
+      modifyUserImg(user.id, fileUrl);
+      queryClient.setQueryData('user', { ...user, profileImg: fileUrl });
+    }
   };
 
   // 로그아웃 처리
