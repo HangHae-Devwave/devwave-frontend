@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from 'react-query';
 import { MainLayout } from '../styles/GlobalStyles';
-import { modifyUserImg } from '../server/userService';
+import { modifyUserImg, modifyUserInfo } from '../server/userService';
 import { Uploader } from 'uploader';
 import { UploadButton } from 'react-uploader';
 import { useToast } from '@chakra-ui/react';
@@ -66,14 +66,15 @@ const Profile = () => {
   const saveEditedInfo = () => {
     // 수정된 값을 불러와 state 관리
     setUserInfo({
-      nickname: userInfo.nickname,
       email: userInfo.email,
+      nickname: userInfo.nickname,
     });
     queryClient.setQueryData('user', {
       ...queryClient.getQueryData('user'),
-      nickname: userInfo.nickname,
       email: userInfo.email,
+      nickname: userInfo.nickname,
     });
+    modifyUserInfo(user.id, userInfo.email, userInfo.nickname);
 
     // 모달창 닫음
     onClose();
