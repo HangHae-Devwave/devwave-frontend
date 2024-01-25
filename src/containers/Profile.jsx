@@ -26,7 +26,7 @@ import {
 import basicUserIcon from '../assets/basic-user-icon.svg';
 import ProfileImg from '../components/ProfileImg';
 import useUser from '../hooks/useUser';
-import PostManager from '../server/postService';
+import { getPostList } from '../server/postService';
 import PostItem from '../components/PostItem';
 
 // 이미지 업로더
@@ -41,7 +41,6 @@ const Profile = () => {
   const queryClient = useQueryClient();
   const user = queryClient.getQueryData('user');
   const useUserHook = useUser();
-
   // 모달 관련
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -64,12 +63,18 @@ const Profile = () => {
   const [uploadImgUrl, setUploadImgUrl] = useState(user.profileImg || basicUserIcon);
 
   // 정보 저장 함수 + 토스트 출력
-  const saveEditedInfo = (position) => {
+  const saveEditedInfo = () => {
     // 수정된 값을 불러와 state 관리
     setUserInfo({
       nickname: userInfo.nickname,
       email: userInfo.email,
     });
+    queryClient.setQueryData('user', {
+      ...queryClient.getQueryData('user'),
+      nickname: userInfo.nickname,
+      email: userInfo.email,
+    });
+
     // 모달창 닫음
     onClose();
     // 토스트 메시지 ( 로직만 )
@@ -80,15 +85,12 @@ const Profile = () => {
   };
 
   // postList 데이터 관련
-  const postManager = new PostManager();
   const [postList, setPostList] = useState([]);
 
   useEffect(() => {
     const fetchMyPosts = async () => {
-      await postManager
-        .getPostList()
+      await getPostList()
         .then((response) => {
-          console.log(response);
           setPostList(response);
         })
         .catch((error) => {
@@ -111,6 +113,7 @@ const Profile = () => {
   // 로그아웃 처리
   const logoutHandler = async () => {
     await useUserHook.clearUser();
+    // localStorage.clear();
     localStorage.removeItem('tokens');
     navigate('/');
   };
@@ -132,12 +135,10 @@ const Profile = () => {
               <UserInfoContainer>
                 <ProfileBox>
                   <ProfileImg src={uploadImgUrl} size="100px" />
-                  {/* <input type="file" accept="image/*" onChange={imageUploadHandler} />
-                  <button onClick={modifyProfileImgHandler}>저장</button> */}
                   <UploadButton
                     uploader={uploader}
                     options={options}
-                    onComplete={(file) => modifyProfileImgHandler(file[0].fileUrl)}>
+                    onComplete={(file) => modifyProfileImgHandler(file.length > 0 ? file[0].fileUrl : '')}>
                     {({ onClick }) => <button onClick={onClick}>이미지 변경하기</button>}
                   </UploadButton>
                 </ProfileBox>
@@ -154,7 +155,7 @@ const Profile = () => {
             <TabPanel>
               <Posts>
                 {postList
-                  .filter((myPosts) => myPosts.author === localStorage.getItem('nickname'))
+                  .filter((myPosts) => myPosts.author === user.nickname)
                   .map((myPosts) => (
                     <div key={myPosts.id}>
                       <PostItem key={myPosts.id} onClick={() => handlePostClick(myPosts)} post={myPosts}></PostItem>
@@ -188,7 +189,7 @@ const Profile = () => {
             <ModalFooter>
               <Wrap>
                 <WrapItem>
-                  <Button colorScheme="blue" mr={3} onClick={() => saveEditedInfo()}>
+                  <Button colorScheme="blue" mr={3} onClick={saveEditedInfo}>
                     Save
                   </Button>
                 </WrapItem>

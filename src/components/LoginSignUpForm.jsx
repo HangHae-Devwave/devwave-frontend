@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { SHA256 } from 'crypto-js';
 import { useAlert } from '../contexts/AlertProvider';
-import { authenticateUser, createUser, refresh } from '../server/userService';
-import Cookies from 'js-cookie';
+import { authenticateUser, createUser } from '../server/userService';
+// import Cookies from 'js-cookie';
 import styled from 'styled-components';
 import Button from './button/Button';
 import Input from './input/Input';
@@ -65,34 +65,34 @@ const LoginSignUpForm = ({ type }) => {
     setIsValid({ ...isValid, isPasswordConfirmValid: inputVal.password === e.target.value ? true : false });
   };
 
-  const getTokenFromLocal = async () => {
-    try {
-      const accessToken = await localStorage.getItem('accessToken');
-      const refreshToken = Cookies.get('refreshToken');
-      if (accessToken && refreshToken) {
-        return { accessToken, refreshToken };
-      } else {
-        return null;
-      }
-    } catch (e) {
-      console.log(e.message);
-    }
-  };
+  // const getTokenFromLocal = async () => {
+  //   try {
+  //     const accessToken = await localStorage.getItem('accessToken');
+  //     const refreshToken = Cookies.get('refreshToken');
+  //     if (accessToken && refreshToken) {
+  //       return { accessToken, refreshToken };
+  //     } else {
+  //       return null;
+  //     }
+  //   } catch (e) {
+  //     console.log(e.message);
+  //   }
+  // };
 
-  const verifyTokens = async () => {
-    const token = await getTokenFromLocal();
+  // const verifyTokens = async () => {
+  //   const token = await getTokenFromLocal();
 
-    try {
-      const res = await refresh(token.accessToken, token.refreshToken);
+  //   try {
+  //     const res = await refresh(token.accessToken, token.refreshToken);
 
-      // accessToken 만료, refreshToken 정상 -> 재발급된 accessToken 저장 후 자동 로그인
-      localStorage.setItem('accessToken', res.accessToken);
-      Cookies.set('refreshToken', res.refreshToken);
-    } catch (e) {
-      // const code = e.code;
-      console.log('error: ', e);
-    }
-  };
+  //     // accessToken 만료, refreshToken 정상 -> 재발급된 accessToken 저장 후 자동 로그인
+  //     localStorage.setItem('accessToken', res.accessToken);
+  //     Cookies.set('refreshToken', res.refreshToken);
+  //   } catch (e) {
+  //     // const code = e.code;
+  //     console.log('error: ', e);
+  //   }
+  // };
 
   const loginHandler = async () => {
     if (inputVal.email === '') {

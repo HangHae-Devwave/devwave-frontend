@@ -8,6 +8,20 @@ const userList = [
     email: 'mini0006@naver.com',
     nickname: '곽민지',
     password: 'af5b0d44597f831e45e958249f0320df71dae8cedb12bdaab61d1cf4111a8874',
+    profileImg: 'https://upcdn.io/W142hJk/raw/demo/4ks9nLFoC7.jpeg',
+  },
+  {
+    id: '2',
+    email: 'hee1@test.com',
+    nickname: '임희원',
+    password: '',
+    profileImg: 'https://upcdn.io/W142hJk/image/demo/4ks9nunB4n.jpeg.crop',
+  },
+  {
+    id: '3',
+    email: 'test@test.com',
+    nickname: '테스트',
+    password: '',
     profileImg: '',
   },
 ];
@@ -159,14 +173,13 @@ const createUser = async (email, nickname, password) => {
   return '회원가입 성공';
 };
 
-const getUser = async (id) => {
-  await sleep(100);
+const getUser = (id) => {
   const user = userList.find((user) => user.id === id);
   return user;
 };
 
 const getProfileImg = (id) => {
-  const user = userList.find((user) => user.nickname === id);
+  const user = userList.find((user) => user.id === id);
   return !!user ? user.profileImg : '';
 };
 

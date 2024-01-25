@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
-import PostManager from '../server/postService';
+import { createPost, getPostList } from '../server/postService';
 import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '../styles/GlobalStyles';
 import { useDisclosure } from '@chakra-ui/react-use-disclosure'; // chakra modal
@@ -21,17 +21,17 @@ import { Wrap, WrapItem } from '@chakra-ui/react';
 import { useToast } from '@chakra-ui/react'; // chakra toast
 import { Radio, RadioGroup } from '@chakra-ui/react'; // chakra radio
 import { Stack } from '@chakra-ui/react';
-import { Skeleton, SkeletonCircle, SkeletonText } from '@chakra-ui/react'; // chakra skeleton
+import { SkeletonCircle, SkeletonText } from '@chakra-ui/react'; // chakra skeleton
 import { Box } from '@chakra-ui/react';
 import { useInView } from 'react-intersection-observer';
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react';
 import PostItem from '../components/PostItem';
+import { useQueryClient } from 'react-query';
 
 const Home = () => {
   const navigate = useNavigate();
-
-  // 게시물 CRUD관련 클래스 객체 생성
-  const postManager = new PostManager();
+  const queryClient = useQueryClient();
+  const user = queryClient.getQueryData('user');
 
   // 게시물 데이터 상태관리
   const [posts, setPosts] = useState([]);
@@ -42,10 +42,9 @@ const Home = () => {
 
   const fetchPosts = useCallback(async () => {
     setIsLoading(true);
-    const response = await postManager.getPostList(page);
+    const response = await getPostList(page);
     setPosts((prevState) => [...prevState, ...response]);
     setIsLoading(false);
-    console.log(page);
   }, [page]);
 
   // fetchPosts이 바뀔 때마다 함수 실행
@@ -72,37 +71,11 @@ const Home = () => {
     duration: 4000,
   });
 
-  // 민지님이 캐시 만드려고 시도한 코드
-  // 초기 데이터를 가져오는 방식
-  useEffect(() => {
-    // 서버에서 데이터를 가져와서 로컬 상태에 설정하는 비동기 함수
-    const fetchPosts = async () => {
-      // localStorage에 저장된 posts 데이터가 있다면
-      // 서버 호출하지 않고 localStorage 데이터를 posts에 저장
-      if (!!localStorage.getItem('posts')) {
-        setPosts(JSON.parse(localStorage.getItem('posts')));
-      } else {
-        // 서버에서 데이터를 가져오는 비동기 요청
-        await postManager
-          .getPostList()
-          .then((response) => {
-            localStorage.setItem('posts', JSON.stringify(response));
-            setPosts(response);
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-      }
-      setIsLoading(false);
-    };
-    fetchPosts();
-  }, []); // 빈 배열은 컴포넌트가 마운트될 때만 실행되도록 보장
-
   const handlePostClick = (post) => navigate(`/${post.id}`, { state: { post } });
 
   // 새 게시글 작성 및 저장하는 함수
   const saveNewPost = async () => {
-    if (!localStorage.getItem('token')) {
+    if (!localStorage.getItem('tokens')) {
       toast({
         title: '작성 오류',
         status: 'error',
@@ -111,17 +84,9 @@ const Home = () => {
       return;
     }
     if (!!inputVal.title && !!inputVal.content) {
-      const createdPost = await postManager.createPost(
-        inputVal.type,
-        inputVal.title,
-        inputVal.content,
-        JSON.parse(localStorage.getItem('user')).nickname
-      );
+      const createdPost = await createPost(inputVal.type, inputVal.title, inputVal.content, user.id, user.nickname);
       // 기존 게시물 목록에 새 게시글 추가 후 상태 업데이트
-      setPosts((prevPosts) => [...prevPosts, createdPost]);
-      const localStoragePosts = JSON.parse(localStorage.getItem('posts')) || [];
-      const newLocalStoragePosts = [...localStoragePosts, createdPost];
-      localStorage.setItem('posts', JSON.stringify(newLocalStoragePosts));
+      setPosts((prevPosts) => [createdPost, ...prevPosts]);
       // 모달 닫기 및 입력 폼 초기화
       onClose();
       setInputVal({ type: '', title: '', content: '' });
@@ -148,10 +113,14 @@ const Home = () => {
   const typeClassifier = (posts, type) => {
     return posts
       .filter((post) => post.type === type)
-      .map((post) => (
-        <div key={post.id}>
-          <PostItem key={post.id} onClick={() => handlePostClick(post)} post={post}></PostItem>
-        </div>
+      .map((post, idx) => (
+        <React.Fragment key={idx}>
+          {posts.length - 1 === idx ? (
+            <PostItem ref={ref} onClick={() => handlePostClick(post)} post={post} isLoading={isLoading}></PostItem>
+          ) : (
+            <PostItem onClick={() => handlePostClick(post)} post={post} isLoading={isLoading}></PostItem>
+          )}
+        </React.Fragment>
       ));
   };
 

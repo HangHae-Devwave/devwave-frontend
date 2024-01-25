@@ -11,12 +11,7 @@ const fetchUserData = async () => {
 
 const App = () => {
   // 유저 데이터
-  const { isLoading } = useQuery({
-    queryKey: 'user',
-    queryFn: fetchUserData,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  });
+  const { isLoading } = useQuery('user', fetchUserData);
 
   return <>{!isLoading && <Router />}</>;
 };
