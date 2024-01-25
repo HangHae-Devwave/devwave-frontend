@@ -41,10 +41,12 @@ const Home = () => {
   const [ref, inView] = useInView();
 
   const fetchPosts = useCallback(async () => {
-    setIsLoading(true);
-    const response = await getPostList(page);
-    setPosts((prevState) => [...prevState, ...response]);
-    setIsLoading(false);
+    if (posts.length % 5 === 0) {
+      setIsLoading(true);
+      const response = await getPostList(page);
+      setPosts((prevState) => [...prevState, ...response]);
+      setIsLoading(false);
+    }
   }, [page]);
 
   // fetchPosts이 바뀔 때마다 함수 실행

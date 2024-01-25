@@ -122,11 +122,12 @@ const posts = [
 // Home에 게시물 목록 띄우기
 const getPostList = async (page) => {
   await sleep(1000);
-  const newPosts = posts.map((post) => {
+  const newPosts = posts.slice(5 * (page - 1), 5 * page).map((post) => {
     const user = getUser(post.userId);
     const newPost = { ...post, profileImg: user.profileImg, author: user.nickname };
     return newPost;
   });
+  console.log(newPosts);
   return newPosts;
 };
 
