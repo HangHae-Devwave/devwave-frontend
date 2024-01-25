@@ -113,20 +113,18 @@ const Home = () => {
 
         <Content>
           {/* 게시물 목록 */}
-          {isLoading && <Loading />}
-          {!isLoading && (
-            <Posts>
-              {posts.map((post, idx) => (
-                <React.Fragment key={idx}>
-                  {posts.length - 1 === idx ? (
-                    <PostItem ref={ref} onClick={() => handlePostClick(post)} post={post}></PostItem>
-                  ) : (
-                    <PostItem onClick={() => handlePostClick(post)} post={post}></PostItem>
-                  )}
-                </React.Fragment>
-              ))}
-            </Posts>
-          )}
+          <Posts>
+            {posts.map((post, idx) => (
+              <React.Fragment key={idx}>
+                {posts.length - 1 === idx ? (
+                  // {isLoading && <Loading />}
+                  <PostItem ref={ref} onClick={() => handlePostClick(post)} post={post}></PostItem>
+                ) : (
+                  <PostItem onClick={() => handlePostClick(post)} post={post}></PostItem>
+                )}
+              </React.Fragment>
+            ))}
+          </Posts>
 
           {/* Chakra UI Modal */}
           <Modal isOpen={isOpen} onClose={onClose} isCentered>
