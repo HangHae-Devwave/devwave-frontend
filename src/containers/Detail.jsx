@@ -1,21 +1,38 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MainLayout } from '../styles/GlobalStyles';
 import { Input } from '@chakra-ui/react'
 import { Button, ButtonGroup } from '@chakra-ui/react'
-import PostManager from '../server/postService';
 import { useToast } from '@chakra-ui/react';
-// import { useDisclosure } from '@chakra-ui/react-use-disclosure';
+import { useDisclosure } from '@chakra-ui/react-use-disclosure';
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  FormControl,
+  FormLabel,
+} from '@chakra-ui/react';
+import { Wrap, WrapItem } from '@chakra-ui/react';
+import PostManager from '../server/postService';
+
 
 const Detail = () => {
   // Home.jsx에서 데이터 가져옴
   const location = useLocation().state;
   const postId = location.post.id;
-  const postTitle = location.post.title;
   const postAuthor = location.post.author;
-  const postContent = location.post.content;
+  const [postTitle, setPostTitle] = useState(location.post.title);
+  const [postContent, setPostContent] = useState(location.post.content);
   const [postComments, setPostComments] = useState(location.post.comment || [{}]);
+
+  // 게시물 수정시 필요한 부분
+  const postTitleChangeHandler = (e) => {setPostTitle(e.target.value)};
+  const postContentChangeHandler = (e) => {setPostContent(e.target.value)};
 
   // 로그인 여부 체크
   const checkLoginStatus = () => {
@@ -88,7 +105,7 @@ const Detail = () => {
     }
   };
 
-  // const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   // 게시글 삭제 버튼 핸들러
   const deleteButtonHandler = () => {
@@ -101,11 +118,8 @@ const Detail = () => {
       });
     }
     const currentUser = localStorage.getItem("nickname");
-    console.log(`currentUser : ${currentUser}`);
-    console.log(`postAuthor : ${postAuthor}`);
     // 로그인된 사용자와 게시물 작성자를 비교
     if(currentUser===postAuthor){
-      console.log(postManager.deletePost(postId))
       // 삭제 성공 
       toast({
         title: '삭제 성공',
@@ -135,6 +149,50 @@ const Detail = () => {
     }
   }
 
+  // 게시물 수정 버튼 핸들러
+  const editButtonHandler = () => {
+    if(!checkLoginStatus){
+      // 수정 실패 : 비로그인 사용자 접근
+      toast({
+        title: '수정 실패',
+        status: "error",
+        description: '로그인을 하지 않았습니다.',
+      });
+    }
+    const currentUser = localStorage.getItem("nickname");
+    // 로그인된 사용자와 게시물 작성자를 비교
+    if(currentUser===postAuthor){
+      // 수정 성공 
+      onOpen();
+      
+    }
+    // 수정 실패 : 작성자가 아닌 사용자가 수정시도
+    else{
+      toast({
+        title: '수정 실패',
+        status: "error",
+        description: '작성자만 수정할 수 있습니다.',
+      });
+    }
+  }
+
+  const editPostHandler = () => {
+    const storedPosts = localStorage.getItem('posts');
+    let posts = storedPosts ? JSON.parse(storedPosts) : [];
+    posts.forEach((post) => {
+      if (post.id === postId) {
+        post.title = postTitle;
+        post.content = postContent;
+      }
+    });
+    localStorage.setItem('posts', JSON.stringify(posts));
+    onClose();
+    toast({
+      title: '수정 성공',
+      status: "success",
+      description: '게시물이 수정되었습니다.',
+    });
+  }
   return (
     <MainLayout>
       <Container>
@@ -151,6 +209,13 @@ const Detail = () => {
           <Content>{postContent}</Content>
           <ButtonGroup position="absolute" right={5} bottom={5}>
             {/* <Button colorScheme='teal'>수정</Button> */}
+            <Button 
+              ml={5} 
+              colorScheme='teal'
+              // display='none'
+              onClick={editButtonHandler}>
+                수정
+              </Button>
             <Button 
               ml={5} 
               colorScheme='pink'
@@ -181,6 +246,54 @@ const Detail = () => {
               작성하기
           </Button>
         </InputSection>
+
+        {/* Chakra UI Modal */}
+        <Modal isOpen={isOpen} onClose={onClose} isCentered>
+            <ModalOverlay />
+            <ModalContent>
+              <ModalHeader>Edit Your Post</ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
+
+                {/* Modal Input */}
+                <FormControl>
+                  <FormLabel>Title</FormLabel>
+                  <Input 
+                    value={postTitle} 
+                    onChange={postTitleChangeHandler} 
+                    placeholder="Enter New Title" />
+                </FormControl>
+
+                <FormControl mt={4}>
+                  <FormLabel>Content</FormLabel>
+                  <Input
+                    value={postContent}
+                    onChange={postContentChangeHandler}
+                    placeholder="Enter New Content"
+                    h={400}
+                  />
+                </FormControl>
+              </ModalBody>
+
+              {/* Modal Button */}
+              <ModalFooter>
+                <Wrap>
+                    <WrapItem>
+                      <Button 
+                        colorScheme="blue" 
+                        mr={3} 
+                        onClick={editPostHandler}
+                        >
+                          Save
+                      </Button>
+                    </WrapItem>
+                </Wrap>
+                <Button onClick={onClose}>Cancel</Button>
+              </ModalFooter>
+
+            </ModalContent>
+          </Modal>
+
       </Container>
     </MainLayout>
   );
