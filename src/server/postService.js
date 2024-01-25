@@ -96,13 +96,12 @@ class PostManager {
   };
 
   // Home에 게시물 목록 띄우기
-  async getPostList() {
-    await this.sleep(1000);
+  async getPostList(page) {
+    await this.sleep(500);
     const newPosts = this.posts.map((post) => {
       const newPost = { ...post, profileImg: getProfileImg(post.author) };
       return newPost;
     });
-    console.log('newPost: ', newPosts);
     return newPosts;
   }
 
