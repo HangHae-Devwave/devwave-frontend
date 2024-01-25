@@ -147,7 +147,7 @@ const createPost = async (type, title, content, userId, author) => {
   const date = dateFormat(new Date());
   const comment = [{}];
   const post = { id, type, title, content, userId, author, date, comment };
-  posts.push(post);
+  posts.unshift(post);
   return post;
 };
 
