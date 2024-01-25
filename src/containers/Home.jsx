@@ -19,9 +19,10 @@ import {
 } from '@chakra-ui/react';
 import { Wrap, WrapItem } from '@chakra-ui/react';
 import { useToast } from '@chakra-ui/react'; // chakra toast
+import { Skeleton, SkeletonCircle, SkeletonText } from '@chakra-ui/react'; // chakra skeleton
+import { Box } from '@chakra-ui/react';
 import { useInView } from 'react-intersection-observer';
 import PostItem from '../components/PostItem';
-import Loading from '../components/Loading';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -118,12 +119,33 @@ const Home = () => {
               <React.Fragment key={idx}>
                 {posts.length - 1 === idx ? (
                   // {isLoading && <Loading />}
-                  <PostItem ref={ref} onClick={() => handlePostClick(post)} post={post}></PostItem>
+                  <PostItem
+                    ref={ref}
+                    onClick={() => handlePostClick(post)}
+                    post={post}
+                    isLoading={isLoading}></PostItem>
                 ) : (
-                  <PostItem onClick={() => handlePostClick(post)} post={post}></PostItem>
+                  <PostItem onClick={() => handlePostClick(post)} post={post} isLoading={isLoading}></PostItem>
                 )}
               </React.Fragment>
             ))}
+            {/* 로딩 중일 때 Skeleton UI 표시*/}
+            {/* 최초엔 5 개의 스켈레톤 표시 */}
+            {isLoading &&
+              posts.length === 0 &&
+              Array.from({ length: 5 }, (_, index) => (
+                <Box key={index} padding="10" boxShadow="lg" bg="#f7fbff">
+                  <SkeletonCircle size="8" />
+                  <SkeletonText mt="8" noOfLines={4} spacing="4" skeletonHeight="2" />
+                </Box>
+              ))}
+            {/* 그 이후에는 한 개의 스켈레톤만 보여주기 */}
+            {isLoading && posts.length > 1 && (
+              <Box padding="10" boxShadow="lg" bg="#f7fbff">
+                <SkeletonCircle size="8" />
+                <SkeletonText mt="8" noOfLines={4} spacing="4" skeletonHeight="2" />
+              </Box>
+            )}
           </Posts>
 
           {/* Chakra UI Modal */}
