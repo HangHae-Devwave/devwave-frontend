@@ -116,8 +116,7 @@ const Profile = () => {
   // 로그아웃 처리
   const logoutHandler = async () => {
     await useUserHook.clearUser();
-    // localStorage.clear();
-    localStorage.removeItem('tokens');
+    localStorage.clear();
     navigate('/');
   };
 

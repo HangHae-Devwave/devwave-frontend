@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { SHA256 } from 'crypto-js';
 import { useAlert } from '../contexts/AlertProvider';
-import { authenticateUser, createUser } from '../server/userService';
+import { authenticateUser, createUser, getUser } from '../server/userService';
 // import Cookies from 'js-cookie';
 import styled from 'styled-components';
 import Button from './button/Button';
@@ -12,9 +12,11 @@ import emailIcon from '../assets/email-icon.svg';
 import profileIcon from '../assets/profile-icon.svg';
 import lockIcon from '../assets/lock-icon.svg';
 import checkIcon from '../assets/check-icon.svg';
+import { useQueryClient } from 'react-query';
 
 const LoginSignUpForm = ({ type }) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { showAlert } = useAlert();
 
   const [inputVal, setInputVal] = useState({ email: '', nickname: '', password: '', passwordConfirm: '' });
@@ -114,6 +116,7 @@ const LoginSignUpForm = ({ type }) => {
             })
           );
           localStorage.setItem('userId', userId);
+          queryClient.setQueryData('user', getUser(userId));
           showAlert('로그인 성공', 'success');
           navigate('/');
         })

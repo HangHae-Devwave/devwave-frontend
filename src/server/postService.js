@@ -127,7 +127,6 @@ const getPostList = async (page) => {
     const newPost = { ...post, profileImg: user.profileImg, author: user.nickname };
     return newPost;
   });
-  console.log(newPosts);
   return newPosts;
 };
 
