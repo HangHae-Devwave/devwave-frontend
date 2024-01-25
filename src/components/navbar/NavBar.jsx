@@ -82,6 +82,7 @@ const Navbar = styled.div`
 
   & > img {
     width: 10vw;
+    cursor: pointer;
   }
 `;
 

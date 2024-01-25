@@ -25,6 +25,7 @@ const Post = styled.div`
   background-color: #f7fbff;
   padding: 30px;
   border-radius: 12px;
+  cursor: pointer;
 `;
 
 const InfoContainer = styled.div`

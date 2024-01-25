@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from 'react-query';
@@ -26,6 +26,8 @@ import {
 import basicUserIcon from '../assets/basic-user-icon.svg';
 import ProfileImg from '../components/ProfileImg';
 import useUser from '../hooks/useUser';
+import PostManager from '../server/postService';
+import PostItem from '../components/PostItem';
 
 // 이미지 업로더
 const uploader = Uploader({
@@ -43,9 +45,13 @@ const Profile = () => {
   // 모달 관련
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  // 토스트 관련
-  const toast = useToast();
-  const positions = ['top'];
+  // 토스트 관련 ( 스타일만 )
+  const toast = useToast({
+    position: 'top',
+    isClosable: true,
+    status: 'success',
+    duration: 4000,
+  });
 
   // 사용자 정보관련
   const [userInfo, setUserInfo] = useState({
@@ -66,19 +72,35 @@ const Profile = () => {
     });
     // 모달창 닫음
     onClose();
-    // 토스트 메시지
+    // 토스트 메시지 ( 로직만 )
     toast({
       title: `사용자 정보 수정`,
       description: '변경사항이 저장되었습니다.',
-      position: position,
-      isClosable: true,
-      status: 'success',
-      duration: 4000,
     });
   };
 
-  // post 데이터 관련
-  // const postManager = new PostManager();
+  // postList 데이터 관련
+  const postManager = new PostManager();
+  const [postList, setPostList] = useState([]);
+
+  useEffect(() => {
+    const fetchMyPosts = async () => {
+      await postManager
+        .getPostList()
+        .then((response) => {
+          console.log(response);
+          setPostList(response);
+        })
+        .catch((error) => {
+          console.log(`error: ${error}`);
+        });
+    };
+    fetchMyPosts();
+  }, []);
+
+  const handlePostClick = (post) => {
+    navigate(`/${post.id}`, { state: { post } });
+  };
 
   const modifyProfileImgHandler = (fileUrl) => {
     setUploadImgUrl(fileUrl);
@@ -129,7 +151,17 @@ const Profile = () => {
             </TabPanel>
 
             {/* Your Post */}
-            <TabPanel></TabPanel>
+            <TabPanel>
+              <Posts>
+                {postList
+                  .filter((myPosts) => myPosts.author === localStorage.getItem('nickname'))
+                  .map((myPosts) => (
+                    <div key={myPosts.id}>
+                      <PostItem key={myPosts.id} onClick={() => handlePostClick(myPosts)} post={myPosts}></PostItem>
+                    </div>
+                  ))}
+              </Posts>
+            </TabPanel>
           </TabPanels>
         </Tabs>
 
@@ -139,6 +171,7 @@ const Profile = () => {
           <ModalContent>
             <ModalHeader>Edit your profile</ModalHeader>
             <ModalCloseButton />
+
             <ModalBody>
               {/* Modal Input */}
               <FormControl>
@@ -154,32 +187,17 @@ const Profile = () => {
             {/* Modal Button */}
             <ModalFooter>
               <Wrap>
-                {positions.map((position, i) => (
-                  <WrapItem key={i}>
-                    <Button colorScheme="blue" mr={3} onClick={() => saveEditedInfo(position)}>
-                      Save
-                    </Button>
-                  </WrapItem>
-                ))}
+                <WrapItem>
+                  <Button colorScheme="blue" mr={3} onClick={() => saveEditedInfo()}>
+                    Save
+                  </Button>
+                </WrapItem>
               </Wrap>
               <Button onClick={onClose}>Cancel</Button>
             </ModalFooter>
           </ModalContent>
         </Modal>
       </Container>
-      {/* 정보 수정 모달 */}
-      {/* // <Modal isOpen={editModalIsOpen} onRequestClose={closeEditModal} style={ModalStyle}>
-      //   <ModalContent>
-      //     <InputLabel>닉네임:</InputLabel>
-      //     <Input type="text" value={editedNickname} onChange={(e) => setEditedNickname(e.target.value)} />
-      //     <InputLabel>이메일:</InputLabel>
-      //     <Input type="text" value={editedEmail} onChange={(e) => setEditedEmail(e.target.value)} />
-      //     <ButtonGroup>
-      //       <Button onClick={saveEditedInfo}>저장</Button>
-      //       <Button onClick={closeEditModal}>닫기</Button>
-      //     </ButtonGroup>
-      //   </ModalContent>
-      // </Modal> */}
     </MainLayout>
   );
 };
@@ -194,23 +212,17 @@ const HR = styled.hr`
   margin: 30px 0px;
 `;
 
+const Posts = styled.div`
+  display: flex;
+  flex-direction: column;
+  font-size: 25px;
+  gap: 30px;
+`;
+
 const Header = styled.h1`
   font-size: 50px;
   font-weight: bold;
 `;
-// const Header = styled.div`
-//   box-sizing: border-box;
-//   display: flex;
-//   justify-content: space-between;
-//   align-items: center;
-//   padding: 10px 50px;
-//   background-color: #24deffe4;
-//   color: #494949;
-//   border-radius: 30px;
-// `;
-// const Logo = styled.h1`
-//   font-size: 1.6em;
-// `;
 
 const EditButton = styled.button`
   background-color: #fff;
